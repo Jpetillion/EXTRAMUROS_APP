@@ -1,0 +1,30 @@
+.trip-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.trip-list--loading,
+.trip-list--empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #6b7280;
+  gap: 1rem;
+}
+
+.trip-list__empty-message {
+  font-size: 1.125rem;
+  color: #9ca3af;
+}
+
+@media (max-width: 768px) {
+  .trip-list {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}

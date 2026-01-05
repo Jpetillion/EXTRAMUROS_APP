@@ -1,0 +1,55 @@
+.trip-list-page {
+  min-height: 100vh;
+  background: #f3f4f6;
+}
+
+.trip-list-page__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.trip-list-page__offline-notice {
+  background: #fef3c7;
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.trip-list-page__offline-notice p {
+  margin: 0;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.trip-list-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.trip-list-page__empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.trip-list-page__empty h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.trip-list-page__empty p {
+  margin: 0 0 2rem 0;
+  color: #6b7280;
+  font-size: 1.125rem;
+}

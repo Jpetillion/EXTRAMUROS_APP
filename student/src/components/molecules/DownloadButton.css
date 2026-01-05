@@ -1,0 +1,20 @@
+.download-button {
+  width: 100%;
+}
+
+.download-button__progress {
+  margin-bottom: 1rem;
+}
+
+.download-button__message {
+  margin: 0.5rem 0 0.25rem 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.download-button__details {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+}

@@ -1,0 +1,18 @@
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.icon--small {
+  font-size: 1rem;
+}
+
+.icon--medium {
+  font-size: 1.5rem;
+}
+
+.icon--large {
+  font-size: 2rem;
+}

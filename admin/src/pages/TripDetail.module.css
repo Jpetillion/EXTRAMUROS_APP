@@ -1,0 +1,276 @@
+.tripDetail {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loadingContainer,
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 400px;
+  color: var(--color-gray-600);
+}
+
+.header {
+  margin-bottom: 1.5rem;
+}
+
+.tripCard {
+  margin-bottom: 2rem;
+}
+
+.tripHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin: 0 0 0.5rem 0;
+}
+
+.description {
+  font-size: 1rem;
+  color: var(--color-gray-600);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.tripMeta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--color-gray-50);
+  border-radius: var(--radius-md);
+}
+
+.metaItem {
+  font-size: 0.875rem;
+  color: var(--color-gray-700);
+}
+
+.metaItem strong {
+  color: var(--color-gray-900);
+  margin-right: 0.5rem;
+}
+
+.modulesSection {
+  margin-top: 2rem;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.sectionHeader h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin: 0;
+}
+
+.emptyState {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--color-gray-600);
+}
+
+.emptyState p {
+  margin: 0 0 1rem 0;
+}
+
+.modulesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.moduleCard {
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.moduleHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.moduleTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.moduleTitle h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin: 0;
+}
+
+.moduleActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.expandButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+}
+
+.expandButton:hover {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-700);
+}
+
+.moduleContent {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.moduleDescription {
+  margin: 0 0 1.5rem 0;
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+  line-height: 1.5;
+}
+
+.contentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.contentHeader h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin: 0;
+}
+
+.emptyContent {
+  padding: 2rem;
+  text-align: center;
+  background-color: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  color: var(--color-gray-600);
+  font-size: 0.875rem;
+}
+
+.emptyContent p {
+  margin: 0;
+}
+
+.contentList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.contentItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-base);
+}
+
+.contentItem:hover {
+  background-color: var(--color-gray-100);
+}
+
+.contentInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.contentIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background-color: var(--color-white);
+  border-radius: var(--radius-md);
+  color: var(--color-gray-600);
+}
+
+.contentTitle {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-gray-900);
+}
+
+.contentActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .tripHeader {
+    flex-direction: column;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .moduleHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .moduleActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .contentItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .contentActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

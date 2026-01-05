@@ -1,0 +1,37 @@
+{
+  "name": "extra-muros",
+  "version": "1.0.0",
+  "description": "Extra Muros - Teacher admin and student PWA for school trips",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "server",
+    "admin",
+    "student",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:server": "npm run dev --workspace=server",
+    "dev:admin": "npm run dev --workspace=admin",
+    "dev:student": "npm run dev --workspace=student",
+    "build": "npm run build --workspaces --if-present",
+    "build:server": "npm run build --workspace=server",
+    "build:admin": "npm run build --workspace=admin",
+    "build:student": "npm run build --workspace=student",
+    "start": "npm run start --workspace=server",
+    "db:setup": "node server/scripts/setup-db.js",
+    "db:seed": "node server/scripts/seed-db.js"
+  },
+  "keywords": [
+    "education",
+    "travel",
+    "pwa",
+    "offline-first"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

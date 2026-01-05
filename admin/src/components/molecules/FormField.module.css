@@ -1,0 +1,17 @@
+.formField {
+  margin-bottom: 1.25rem;
+}
+
+.error {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--color-danger);
+}
+
+.helperText {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
+}

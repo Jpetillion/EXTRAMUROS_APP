@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { tripsAPI } from '../utils/api';
 import { useToast } from '../hooks/useToast';
@@ -23,13 +23,75 @@ const Trips = () => {
 
   useEffect(() => {
     fetchTrips();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const normalizeTrip = (trip) => {
+    // Support both old + new API shapes
+    const publishedFlag = trip.published ?? trip.is_published ?? trip.isPublished ?? false;
+
+    // status can be string or derived from published
+    const status =
+      trip.status ??
+      (publishedFlag ? 'published' : 'draft');
+
+    // updatedAt can be snake_case or camelCase, unix seconds or ISO string
+    const rawUpdated =
+      trip.updatedAt ??
+      trip.updated_at ??
+      trip.updated ??
+      trip.createdAt ??
+      trip.created_at ??
+      null;
+
+    const updatedAt =
+      typeof rawUpdated === 'number'
+        ? new Date(rawUpdated * 1000).toISOString()
+        : rawUpdated;
+
+    // "Location summary" now comes from stops
+    const stops = Array.isArray(trip.stops) ? trip.stops : [];
+    const firstStop = stops[0] || null;
+
+    const city =
+      trip.city ??
+      trip.locationCity ??
+      firstStop?.city ??
+      firstStop?.place ??
+      firstStop?.title ??
+      firstStop?.name ??
+      '';
+
+    const country =
+      trip.country ??
+      trip.locationCountry ??
+      firstStop?.country ??
+      '';
+
+    // duration: either trip.duration or derived from stops
+    const duration =
+      trip.duration ??
+      trip.totalDuration ??
+      (stops.length ? `${stops.length} stop${stops.length === 1 ? '' : 's'}` : null);
+
+    return {
+      ...trip,
+      status,
+      updatedAt,
+      stops,
+      city,
+      country,
+      duration
+    };
+  };
 
   const fetchTrips = async () => {
     try {
       setLoading(true);
       const response = await tripsAPI.getAll();
-      setTrips(response.data || []);
+
+      const rows = response?.data || [];
+      setTrips(Array.isArray(rows) ? rows.map(normalizeTrip) : []);
     } catch (err) {
       console.error('Failed to fetch trips:', err);
       error('Failed to load trips');
@@ -57,6 +119,7 @@ const Trips = () => {
   const handleSubmit = async (formData) => {
     try {
       setSubmitting(true);
+
       if (editingTrip) {
         await tripsAPI.update(editingTrip.id, formData);
         success('Trip updated successfully');
@@ -64,20 +127,25 @@ const Trips = () => {
         await tripsAPI.create(formData);
         success('Trip created successfully');
       }
+
       handleCloseModal();
       fetchTrips();
     } catch (err) {
       console.error('Failed to save trip:', err);
-      error(err?.data?.message || 'Failed to save trip');
+      // axios errors are usually err.response.data
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to save trip';
+      error(msg);
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDeleteTrip = async (tripId) => {
-    if (!window.confirm('Are you sure you want to delete this trip?')) {
-      return;
-    }
+    if (!window.confirm('Are you sure you want to delete this trip?')) return;
 
     try {
       await tripsAPI.delete(tripId);
@@ -85,7 +153,12 @@ const Trips = () => {
       fetchTrips();
     } catch (err) {
       console.error('Failed to delete trip:', err);
-      error(err?.data?.message || 'Failed to delete trip');
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to delete trip';
+      error(msg);
     }
   };
 
@@ -96,7 +169,12 @@ const Trips = () => {
       fetchTrips();
     } catch (err) {
       console.error('Failed to publish trip:', err);
-      error(err?.data?.message || 'Failed to publish trip');
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to publish trip';
+      error(msg);
     }
   };
 
@@ -107,7 +185,12 @@ const Trips = () => {
       fetchTrips();
     } catch (err) {
       console.error('Failed to unpublish trip:', err);
-      error(err?.data?.message || 'Failed to unpublish trip');
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to unpublish trip';
+      error(msg);
     }
   };
 
@@ -122,6 +205,46 @@ const Trips = () => {
       default:
         return 'gray';
     }
+  };
+
+  const renderStopSummary = (trip) => {
+    const stops = trip.stops || [];
+    if (!stops.length) return null;
+
+    // show first 2 stops as quick glance (title + optional category/duration)
+    const top = stops.slice(0, 2);
+    const remaining = stops.length - top.length;
+
+    return (
+      <div style={{ marginTop: 8 }}>
+        {top.map((s, idx) => {
+          const title = s.title || s.name || s.place || `Stop ${idx + 1}`;
+          const category = s.category ? String(s.category) : null;
+          const dur =
+            s.duration ||
+            s.durationMinutes ||
+            s.duration_minutes ||
+            null;
+
+          const durText =
+            typeof dur === 'number' ? `${dur} min` : (dur ? String(dur) : null);
+
+          const meta = [durText, category].filter(Boolean).join(' • ');
+
+          return (
+            <div key={s.id || idx} style={{ fontSize: 12, opacity: 0.9, display: 'flex', gap: 8 }}>
+              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                • {title}
+              </span>
+              {meta ? <span style={{ opacity: 0.7, whiteSpace: 'nowrap' }}>{meta}</span> : null}
+            </div>
+          );
+        })}
+        {remaining > 0 ? (
+          <div style={{ fontSize: 12, opacity: 0.7 }}>+ {remaining} more</div>
+        ) : null}
+      </div>
+    );
   };
 
   if (loading) {
@@ -192,9 +315,14 @@ const Trips = () => {
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
-                  <span>{trip.city}, {trip.country}</span>
+
+                  <span>
+                    {trip.city}
+                    {trip.country ? `, ${trip.country}` : ''}
+                  </span>
                 </div>
-                {trip.duration && (
+
+                {trip.duration ? (
                   <div className={styles.metaItem}>
                     <svg
                       width="16"
@@ -211,8 +339,11 @@ const Trips = () => {
                     </svg>
                     <span>{trip.duration}</span>
                   </div>
-                )}
+                ) : null}
               </div>
+
+              {/* Stops preview (new model) */}
+              {renderStopSummary(trip)}
 
               <div className={styles.cardFooter}>
                 <div className={styles.footerLeft}>

@@ -43,30 +43,43 @@ router.get('/:id', async (req, res) => {
 // Create trip (teachers/admins only)
 router.post('/', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
   try {
-    const { title, description, destination, startDate, endDate, coverImageUrl } = req.body;
+    const { title, description, coverImageUrl, stops = [] } = req.body;
 
-    const errors = validateRequired(['title', 'destination', 'startDate', 'endDate'], req.body);
-    if (errors) {
-      return res.status(400).json({ errors });
-    }
+    const errors = validateRequired(['title'], req.body);
+    if (errors) return res.status(400).json({ errors });
 
-    const id = await createTrip(
+    // voorlopig: keep legacy fields nullable/default
+    const destination = req.body.destination ?? null;
+    const startDate = req.body.startDate ?? null;
+    const endDate = req.body.endDate ?? null;
+
+    const tripId = await createTrip(
       title,
       description,
       destination,
       startDate,
       endDate,
       req.user.id,
-      coverImageUrl
+      coverImageUrl ?? null
     );
 
-    const trip = await getTripById(id);
-    res.status(201).json(trip);
+    // stops opslaan
+    for (let i = 0; i < stops.length; i++) {
+      const stop = { ...stops[i], orderIndex: stops[i].orderIndex ?? i };
+      if (!stop.title) continue; // of validator errors opbouwen
+      await createTripStop(tripId, stop);
+    }
+
+    const trip = await getTripById(tripId);
+    const tripStops = await getTripStopsByTripId(tripId);
+    res.status(201).json({ ...trip, stops: tripStops });
+
   } catch (error) {
     console.error('Create trip error:', error);
     res.status(500).json({ error: 'Failed to create trip' });
   }
 });
+
 
 // Update trip (teachers/admins only)
 router.put('/:id', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {

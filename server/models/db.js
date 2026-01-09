@@ -270,3 +270,39 @@ export const getDashboardStats = async () => {
     downloads: await safeCount('student_downloads'),
   };
 };
+
+// Trip stops (locations)
+export const createTripStop = async (tripId, stop) => {
+  const id = randomUUID();
+  await db.execute({
+    sql: `INSERT INTO trip_stops
+      (id, trip_id, title, duration_minutes, difficulty, category, lat, lng, address,
+       picture_url, audio_url, video_url, order_index, metadata)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      id,
+      tripId,
+      stop.title,
+      stop.durationMinutes ?? null,
+      stop.difficulty ?? null,
+      stop.category ?? null,
+      stop.lat ?? null,
+      stop.lng ?? null,
+      stop.address ?? null,
+      stop.pictureUrl ?? null,
+      stop.audioUrl ?? null,
+      stop.videoUrl ?? null,
+      stop.orderIndex ?? 0,
+      stop.metadata ? JSON.stringify(stop.metadata) : null
+    ]
+  });
+  return id;
+};
+
+export const getTripStopsByTripId = async (tripId) => {
+  const result = await db.execute({
+    sql: 'SELECT * FROM trip_stops WHERE trip_id = ? ORDER BY order_index ASC',
+    args: [tripId]
+  });
+  return result.rows;
+};

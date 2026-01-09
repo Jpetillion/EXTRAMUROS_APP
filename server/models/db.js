@@ -249,3 +249,24 @@ export const getDownloadsByUserId = async (userId) => {
   });
   return result.rows;
 };
+
+// Stats
+export const getDashboardStats = async () => {
+  const safeCount = async (table) => {
+    try {
+      const result = await db.execute({ sql: `SELECT COUNT(*) AS n FROM ${table}` });
+      return Number(result.rows?.[0]?.n ?? 0);
+    } catch {
+      return 0; // tabel bestaat niet (of andere fout) → dashboard blijft werken
+    }
+  };
+
+  return {
+    users: await safeCount('users'),
+    trips: await safeCount('trips'),
+    modules: await safeCount('modules'),
+    contentItems: await safeCount('content_items'),
+    manifests: await safeCount('manifests'),
+    downloads: await safeCount('student_downloads'),
+  };
+};

@@ -8,6 +8,8 @@ import moduleRoutes from './routes/modules.js';
 import contentRoutes from './routes/content.js';
 import manifestRoutes from './routes/manifest.js';
 import uploadRoutes from './routes/upload.js';
+import statsRoutes from './routes/stats.js';
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -33,6 +35,7 @@ app.use('/api/modules', moduleRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/manifest', manifestRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {

@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import { transformResponseMiddleware } from './utils/transform.js';
 import authRoutes from './routes/auth.js';
 import tripRoutes from './routes/trips.js';
 import moduleRoutes from './routes/modules.js';
@@ -9,6 +10,7 @@ import contentRoutes from './routes/content.js';
 import manifestRoutes from './routes/manifest.js';
 import uploadRoutes from './routes/upload.js';
 import statsRoutes from './routes/stats.js';
+import syncRoutes from './routes/sync.js';
 
 
 const app = express();
@@ -23,6 +25,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Transform API responses from snake_case to camelCase
+app.use(transformResponseMiddleware);
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -36,6 +41,7 @@ app.use('/api/content', contentRoutes);
 app.use('/api/manifest', manifestRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/sync', syncRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {

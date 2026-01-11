@@ -94,6 +94,14 @@ export const tripsAPI = {
   unpublish: (id) => api.post(`/trips/${id}/unpublish`),
 };
 
+export const stopsAPI = {
+  getAll: (tripId) => api.get(`/trips/${tripId}/stops`),
+  getById: (tripId, stopId) => api.get(`/trips/${tripId}/stops/${stopId}`),
+  create: (tripId, data) => api.post(`/trips/${tripId}/stops`, data),
+  update: (tripId, stopId, data) => api.put(`/trips/${tripId}/stops/${stopId}`, data),
+  delete: (tripId, stopId) => api.delete(`/trips/${tripId}/stops/${stopId}`),
+};
+
 export const modulesAPI = {
   getAll: (tripId) => api.get(`/trips/${tripId}/modules`),
   getById: (tripId, moduleId) => api.get(`/trips/${tripId}/modules/${moduleId}`),

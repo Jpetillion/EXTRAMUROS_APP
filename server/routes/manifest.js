@@ -3,6 +3,7 @@ import {
   getTripById,
   getModulesByTripId,
   getPublishedContentByTripId,
+  getTripStopsByTripId,
   createManifest,
   getManifestByTripId
 } from '../models/db.js';
@@ -24,6 +25,9 @@ router.post('/:tripId/generate', authMiddleware, requireRole('teacher', 'admin')
 
     // Get all published content for the trip
     const contentItems = await getPublishedContentByTripId(trip.id);
+
+    // Get all trip stops
+    const tripStops = await getTripStopsByTripId(trip.id);
 
     // Group content by module
     const moduleMap = {};
@@ -67,13 +71,38 @@ router.post('/:tripId/generate', authMiddleware, requireRole('teacher', 'admin')
         coverImageUrl: trip.cover_image_url
       },
       modules: Object.values(moduleMap),
+      stops: tripStops.map(stop => ({
+        id: stop.id,
+        title: stop.title,
+        durationMinutes: stop.duration_minutes,
+        difficulty: stop.difficulty,
+        category: stop.category,
+        lat: stop.lat,
+        lng: stop.lng,
+        address: stop.address,
+        pictureUrl: stop.picture_url,
+        audioUrl: stop.audio_url,
+        videoUrl: stop.video_url,
+        orderIndex: stop.order_index,
+        metadata: stop.metadata ? JSON.parse(stop.metadata) : null
+      })),
       generatedAt: new Date().toISOString()
     };
 
-    // Count assets (images, audio, video)
-    const assetsCount = contentItems.filter(item =>
+    // Count assets (images, audio, video from content items)
+    let assetsCount = contentItems.filter(item =>
       ['image', 'audio', 'video'].includes(item.type) && item.media_url
     ).length;
+
+    // Count assets from trip stops
+    for (const stop of tripStops) {
+      if (stop.picture_url) assetsCount++;
+      if (stop.audio_url) assetsCount++;
+      if (stop.video_url) assetsCount++;
+    }
+
+    // Count cover image if exists
+    if (trip.cover_image_url) assetsCount++;
 
     // Save manifest to database
     await createManifest(

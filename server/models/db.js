@@ -306,3 +306,66 @@ export const getTripStopsByTripId = async (tripId) => {
   });
   return result.rows;
 };
+
+export const updateTripStop = async (id, updates) => {
+  const fields = [];
+  const args = [];
+
+  for (const [key, value] of Object.entries(updates)) {
+    fields.push(`${key} = ?`);
+    args.push(value);
+  }
+
+  if (fields.length === 0) return;
+
+  args.push(id);
+  await db.execute({
+    sql: `UPDATE trip_stops SET ${fields.join(', ')}, updated_at = strftime('%s', 'now') WHERE id = ?`,
+    args
+  });
+};
+
+export const deleteTripStop = async (id) => {
+  await db.execute({
+    sql: 'DELETE FROM trip_stops WHERE id = ?',
+    args: [id]
+  });
+};
+
+export const getTripStopById = async (id) => {
+  const result = await db.execute({
+    sql: 'SELECT * FROM trip_stops WHERE id = ?',
+    args: [id]
+  });
+  return result.rows[0] || null;
+};
+
+// Get trip with full nested content (modules, content items, stops)
+export const getTripWithFullContent = async (tripId, publishedOnly = true) => {
+  // Get trip
+  const trip = await getTripById(tripId);
+  if (!trip) return null;
+
+  // Get modules
+  const modules = await getModulesByTripId(tripId);
+
+  // Get content for each module
+  const modulesWithContent = await Promise.all(
+    modules.map(async (module) => {
+      const contents = await getContentItemsByModuleId(module.id, publishedOnly);
+      return {
+        ...module,
+        contents
+      };
+    })
+  );
+
+  // Get trip stops
+  const stops = await getTripStopsByTripId(tripId);
+
+  return {
+    ...trip,
+    modules: modulesWithContent,
+    stops
+  };
+};

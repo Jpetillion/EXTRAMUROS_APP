@@ -1,6 +1,6 @@
 import express from 'express';
 import { uploadMiddleware } from '../middleware/upload.js';
-import { uploadToBlob } from '../config/storage.js';
+import { uploadToBlob, deleteFromBlob } from '../config/storage.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -125,5 +125,31 @@ router.post(
     }
   }
 );
+
+// Delete file from blob storage (teachers/admins only)
+router.delete('/', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
+  try {
+    const { url } = req.body;
+
+    if (!url) {
+      return res.status(400).json({ error: 'File URL is required' });
+    }
+
+    // Validate that the URL is from Vercel Blob
+    if (!url.includes('blob.vercel-storage.com')) {
+      return res.status(400).json({ error: 'Invalid blob URL' });
+    }
+
+    await deleteFromBlob(url);
+
+    res.json({
+      message: 'File deleted successfully',
+      url
+    });
+  } catch (error) {
+    console.error('Delete file error:', error);
+    res.status(500).json({ error: 'Failed to delete file' });
+  }
+});
 
 export default router;

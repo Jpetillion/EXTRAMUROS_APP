@@ -9,6 +9,7 @@ import Spinner from '../components/atoms/Spinner';
 import Modal from '../components/molecules/Modal';
 import ModuleForm from '../components/organisms/ModuleForm';
 import ContentForm from '../components/organisms/ContentForm';
+import TripStopsManager from '../components/organisms/TripStopsManager';
 import styles from './TripDetail.module.css';
 
 const TripDetail = () => {
@@ -411,6 +412,11 @@ const TripDetail = () => {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Trip Stops Section */}
+      <div className={styles.stopsSection}>
+        <TripStopsManager tripId={id} onUpdate={fetchTripData} />
       </div>
 
       {/* Module Modal */}

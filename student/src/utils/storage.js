@@ -75,11 +75,23 @@ export async function getDB() {
 // Trip operations
 export async function saveTrip(trip) {
   const db = await getDB();
-  return db.put(STORES.TRIPS, {
+  console.log('Saving trip to IndexedDB:', {
+    id: trip.id,
+    title: trip.title,
+    eventsCount: trip.events?.length,
+    hasEvents: !!trip.events,
+    firstEventHasImage: trip.events?.[0]?.imageBase64 ? 'YES' : 'NO',
+    firstEventHasAudio: trip.events?.[0]?.audioBase64 ? 'YES' : 'NO'
+  });
+
+  const tripToSave = {
     ...trip,
     isDownloaded: true,
-    downloadedAt: new Date().toISOString()
-  });
+    downloadedAt: trip.downloadedAt || Date.now()
+  };
+
+  console.log('Trip object being saved:', tripToSave);
+  return db.put(STORES.TRIPS, tripToSave);
 }
 
 export async function getTrip(tripId) {

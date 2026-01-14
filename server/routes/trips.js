@@ -272,9 +272,12 @@ router.get('/:tripId/events/:eventId/image', async (req, res) => {
       return res.status(404).json({ error: 'Image not found' });
     }
 
+    // Convert ArrayBuffer to Buffer
+    const buffer = Buffer.from(event.image_blob);
+
     res.set('Content-Type', event.image_mime_type || 'image/jpeg');
     res.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
-    res.send(event.image_blob);
+    res.send(buffer);
   } catch (error) {
     console.error('Serve image error:', error);
     res.status(500).json({ error: 'Failed to serve image' });
@@ -290,9 +293,12 @@ router.get('/:tripId/events/:eventId/audio', async (req, res) => {
       return res.status(404).json({ error: 'Audio not found' });
     }
 
+    // Convert ArrayBuffer to Buffer
+    const buffer = Buffer.from(event.audio_blob);
+
     res.set('Content-Type', event.audio_mime_type || 'audio/mpeg');
     res.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
-    res.send(event.audio_blob);
+    res.send(buffer);
   } catch (error) {
     console.error('Serve audio error:', error);
     res.status(500).json({ error: 'Failed to serve audio' });

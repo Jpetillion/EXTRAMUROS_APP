@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Debug IndexedDB</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .event { border-left: 3px solid #2563eb; padding-left: 15px; margin: 10px 0; }
+    .yes { color: green; font-weight: bold; }
+    .no { color: red; }
+    img { max-width: 400px; border: 1px solid #ddd; margin: 10px 0; }
+    audio { width: 100%; max-width: 400px; }
+  </style>
+</head>
+<body>
+  <h1>IndexedDB Debug Tool</h1>
+  <button onclick="checkDB()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Check IndexedDB</button>
+  <div id="output"></div>
+
+  <script type="module">
+    import { openDB } from 'https://cdn.jsdelivr.net/npm/idb@8/+esm';
+
+    window.checkDB = async function() {
+      const output = document.getElementById('output');
+      output.innerHTML = '<p>Loading...</p>';
+
+      try {
+        const db = await openDB('extra-muros-db', 1);
+        const trips = await db.getAll('trips');
+
+        output.innerHTML = `<h2>Found ${trips.length} trip(s)</h2>`;
+
+        if (trips.length === 0) {
+          output.innerHTML += '<p style="color: orange;">No trips downloaded yet. Go download a trip first!</p>';
+          return;
+        }
+
+        for (const trip of trips) {
+          output.innerHTML += `
+            <div style="border: 2px solid #ddd; padding: 15px; margin: 20px 0; border-radius: 8px;">
+              <h3>${trip.title}</h3>
+              <p><strong>ID:</strong> ${trip.id}</p>
+              <p><strong>Events:</strong> ${trip.events?.length || 0}</p>
+              <hr>
+          `;
+
+          if (trip.events && trip.events.length > 0) {
+            trip.events.forEach((event, idx) => {
+              const hasImage = !!event.imageBase64;
+              const hasAudio = !!event.audioBase64;
+              const hasVideo = !!(event.videoUrl || event.video_url);
+
+              output.innerHTML += `
+                <div class="event">
+                  <h4>${idx + 1}. ${event.title}</h4>
+                  <p><strong>Image:</strong> <span class="${hasImage ? 'yes' : 'no'}">${hasImage ? 'YES ✓' : 'NO ✗'}</span></p>
+                  ${hasImage ? `<p style="font-size: 12px; color: #666;">Size: ${event.imageBase64.length.toLocaleString()} chars (~${Math.round(event.imageBase64.length / 1024)} KB)</p>` : ''}
+
+                  <p><strong>Audio:</strong> <span class="${hasAudio ? 'yes' : 'no'}">${hasAudio ? 'YES ✓' : 'NO ✗'}</span></p>
+                  ${hasAudio ? `<p style="font-size: 12px; color: #666;">Size: ${event.audioBase64.length.toLocaleString()} chars (~${Math.round(event.audioBase64.length / 1024)} KB)</p>` : ''}
+
+                  <p><strong>Video:</strong> <span class="${hasVideo ? 'yes' : 'no'}">${hasVideo ? 'YES ✓' : 'NO ✗'}</span></p>
+                  ${hasVideo ? `<p style="font-size: 12px; color: #666;">${event.videoUrl || event.video_url}</p>` : ''}
+
+                  ${hasImage ? `
+                    <div>
+                      <p><strong>Image Preview:</strong></p>
+                      <img src="${event.imageBase64}" alt="${event.title}" />
+                    </div>
+                  ` : ''}
+
+                  ${hasAudio ? `
+                    <div>
+                      <p><strong>Audio Player:</strong></p>
+                      <audio controls src="${event.audioBase64}"></audio>
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            });
+          } else {
+            output.innerHTML += '<p style="color: orange;">No events found in this trip.</p>';
+          }
+
+          output.innerHTML += '</div>';
+        }
+
+      } catch (err) {
+        output.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${err.message}</p>`;
+        console.error('Debug error:', err);
+      }
+    };
+  </script>
+</body>
+</html>

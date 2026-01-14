@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Media Download</title>
+</head>
+<body>
+  <h1>Test Media Download</h1>
+  <button onclick="testDownload()">Download and Display Media</button>
+  <div id="output"></div>
+  <div id="media"></div>
+
+  <script>
+    const API_URL = 'http://localhost:3000';
+    const TRIP_ID = '476dc115-12ee-4a00-8f66-fdb13f35abce';
+    const EVENT_ID = '9cf5acd8-e82d-4636-88e7-366484db65fe';
+
+    function log(msg) {
+      const output = document.getElementById('output');
+      output.innerHTML += msg + '<br>';
+      console.log(msg);
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function testDownload() {
+      const output = document.getElementById('output');
+      const media = document.getElementById('media');
+      output.innerHTML = '';
+      media.innerHTML = '';
+
+      try {
+        log('Starting download test...');
+
+        // Test image download
+        log('Fetching image...');
+        const imgResponse = await fetch(`${API_URL}/api/trips/${TRIP_ID}/events/${EVENT_ID}/image`);
+        log(`Image response status: ${imgResponse.status}`);
+        log(`Image response ok: ${imgResponse.ok}`);
+        log(`Image Content-Type: ${imgResponse.headers.get('Content-Type')}`);
+        log(`Image Content-Length: ${imgResponse.headers.get('Content-Length')}`);
+
+        if (imgResponse.ok) {
+          const blob = await imgResponse.blob();
+          log(`Image blob size: ${blob.size} bytes`);
+          log(`Image blob type: ${blob.type}`);
+
+          const base64 = await blobToBase64(blob);
+          log(`Base64 length: ${base64.length} chars`);
+          log(`Base64 preview: ${base64.substring(0, 100)}...`);
+
+          // Display image
+          const img = document.createElement('img');
+          img.src = base64;
+          img.style.maxWidth = '500px';
+          media.appendChild(img);
+          log('✓ Image displayed!');
+        }
+
+        // Test audio download
+        log('\nFetching audio...');
+        const audioResponse = await fetch(`${API_URL}/api/trips/${TRIP_ID}/events/${EVENT_ID}/audio`);
+        log(`Audio response status: ${audioResponse.status}`);
+        log(`Audio response ok: ${audioResponse.ok}`);
+        log(`Audio Content-Type: ${audioResponse.headers.get('Content-Type')}`);
+        log(`Audio Content-Length: ${audioResponse.headers.get('Content-Length')}`);
+
+        if (audioResponse.ok) {
+          const blob = await audioResponse.blob();
+          log(`Audio blob size: ${blob.size} bytes`);
+          log(`Audio blob type: ${blob.type}`);
+
+          const base64 = await blobToBase64(blob);
+          log(`Base64 length: ${base64.length} chars`);
+
+          // Display audio player
+          const audio = document.createElement('audio');
+          audio.controls = true;
+          audio.src = base64;
+          media.appendChild(audio);
+          log('✓ Audio player added!');
+        }
+
+        log('\n=== TEST COMPLETE ===');
+      } catch (err) {
+        log(`ERROR: ${err.message}`);
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>

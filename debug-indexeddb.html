@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Debug IndexedDB</title>
+  <script type="module">
+    import { openDB } from 'https://cdn.jsdelivr.net/npm/idb@8/+esm';
+
+    async function checkIndexedDB() {
+      const output = document.getElementById('output');
+
+      try {
+        const db = await openDB('extra-muros-db', 1);
+        output.innerHTML = '<h2>IndexedDB Contents</h2>';
+
+        // Get all trips
+        const trips = await db.getAll('trips');
+        output.innerHTML += `<p><strong>Total trips:</strong> ${trips.length}</p>`;
+
+        trips.forEach((trip, idx) => {
+          output.innerHTML += `
+            <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+              <h3>Trip ${idx + 1}: ${trip.title}</h3>
+              <p><strong>ID:</strong> ${trip.id}</p>
+              <p><strong>Events count:</strong> ${trip.events?.length || 0}</p>
+
+              ${trip.events?.map((event, eventIdx) => `
+                <div style="margin-left: 20px; border-left: 2px solid #ddd; padding-left: 10px;">
+                  <h4>Event ${eventIdx + 1}: ${event.title}</h4>
+                  <p><strong>Has imageBase64:</strong> ${event.imageBase64 ? 'YES ✓' : 'NO ✗'}</p>
+                  ${event.imageBase64 ? `<p><strong>Image size:</strong> ${event.imageBase64.length} chars</p>` : ''}
+                  ${event.imageBase64 ? `<p><strong>Image preview:</strong> ${event.imageBase64.substring(0, 50)}...</p>` : ''}
+
+                  <p><strong>Has audioBase64:</strong> ${event.audioBase64 ? 'YES ✓' : 'NO ✗'}</p>
+                  ${event.audioBase64 ? `<p><strong>Audio size:</strong> ${event.audioBase64.length} chars</p>` : ''}
+
+                  <p><strong>Has video:</strong> ${event.videoUrl || event.video_url ? 'YES ✓' : 'NO ✗'}</p>
+                  ${event.videoUrl || event.video_url ? `<p><strong>Video URL:</strong> ${event.videoUrl || event.video_url}</p>` : ''}
+
+                  ${event.imageBase64 ? `
+                    <div style="margin-top: 10px;">
+                      <p><strong>Image display test:</strong></p>
+                      <img src="${event.imageBase64}" style="max-width: 300px; border: 1px solid #ddd;" />
+                    </div>
+                  ` : ''}
+
+                  ${event.audioBase64 ? `
+                    <div style="margin-top: 10px;">
+                      <p><strong>Audio display test:</strong></p>
+                      <audio controls src="${event.audioBase64}"></audio>
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('') || '<p>No events</p>'}
+            </div>
+          `;
+        });
+
+      } catch (err) {
+        output.innerHTML = `<p style="color: red;">Error: ${err.message}</p>`;
+        console.error(err);
+      }
+    }
+
+    window.checkIndexedDB = checkIndexedDB;
+  </script>
+</head>
+<body style="font-family: Arial, sans-serif; padding: 20px;">
+  <h1>IndexedDB Debug Tool</h1>
+  <button onclick="checkIndexedDB()" style="padding: 10px 20px; font-size: 16px;">Check IndexedDB Contents</button>
+  <div id="output"></div>
+</body>
+</html>

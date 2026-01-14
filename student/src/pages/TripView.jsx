@@ -37,14 +37,19 @@ export function TripView() {
       // For the new event-based structure, events are stored directly on the trip
       setTrip(tripData);
 
+      console.log('=== TRIPVIEW LOADED DATA ===');
       console.log('Loaded trip data:', tripData);
       console.log('Trip has events:', tripData.events?.length);
       if (tripData.events && tripData.events.length > 0) {
         console.log('First event:', tripData.events[0]);
         console.log('First event has imageBase64:', !!tripData.events[0].imageBase64);
+        console.log('First event imageBase64 length:', tripData.events[0].imageBase64?.length);
+        console.log('First event imageBase64 preview:', tripData.events[0].imageBase64?.substring(0, 100));
         console.log('First event has audioBase64:', !!tripData.events[0].audioBase64);
+        console.log('First event audioBase64 length:', tripData.events[0].audioBase64?.length);
         console.log('First event has videoUrl:', !!tripData.events[0].videoUrl);
       }
+      console.log('=== END TRIPVIEW DATA ===');
 
       // Check if this is old module-based data or new event-based data
       if (tripData.events && Array.isArray(tripData.events)) {

@@ -78,16 +78,29 @@ export function BrowseTrips() {
 
           // Always try to download image (backend will return 404 if not present)
           try {
+            console.log(`Fetching image for event ${event.id}...`);
             const imgResponse = await fetch(`${API_URL}/api/trips/${trip.id}/events/${event.id}/image`);
+            console.log(`Image response status: ${imgResponse.status}, ok: ${imgResponse.ok}`);
+            console.log(`Image Content-Type: ${imgResponse.headers.get('Content-Type')}`);
+            console.log(`Image Content-Length: ${imgResponse.headers.get('Content-Length')}`);
+
             if (imgResponse.ok && imgResponse.status === 200) {
               const blob = await imgResponse.blob();
+              console.log(`Image blob size: ${blob.size} bytes, type: ${blob.type}`);
+
               // Only add if we got actual data
               if (blob.size > 0) {
                 const base64 = await blobToBase64(blob);
+                console.log(`Image base64 length: ${base64.length} chars`);
+                console.log(`Image base64 preview: ${base64.substring(0, 100)}`);
                 eventWithMedia.imageBase64 = base64;
                 eventWithMedia.imageMimeType = blob.type;
-                console.log(`Downloaded image for event ${event.id}: ${blob.size} bytes`);
+                console.log(`✓ Downloaded image for event ${event.id}: ${blob.size} bytes`);
+              } else {
+                console.warn(`Image blob is empty for event ${event.id}`);
               }
+            } else {
+              console.log(`Image not available for event ${event.id}`);
             }
           } catch (err) {
             console.error('Failed to download image for event:', event.id, err);
@@ -95,16 +108,27 @@ export function BrowseTrips() {
 
           // Always try to download audio (backend will return 404 if not present)
           try {
+            console.log(`Fetching audio for event ${event.id}...`);
             const audioResponse = await fetch(`${API_URL}/api/trips/${trip.id}/events/${event.id}/audio`);
+            console.log(`Audio response status: ${audioResponse.status}, ok: ${audioResponse.ok}`);
+            console.log(`Audio Content-Length: ${audioResponse.headers.get('Content-Length')}`);
+
             if (audioResponse.ok && audioResponse.status === 200) {
               const blob = await audioResponse.blob();
+              console.log(`Audio blob size: ${blob.size} bytes, type: ${blob.type}`);
+
               // Only add if we got actual data
               if (blob.size > 0) {
                 const base64 = await blobToBase64(blob);
+                console.log(`Audio base64 length: ${base64.length} chars`);
                 eventWithMedia.audioBase64 = base64;
                 eventWithMedia.audioMimeType = blob.type;
-                console.log(`Downloaded audio for event ${event.id}: ${blob.size} bytes`);
+                console.log(`✓ Downloaded audio for event ${event.id}: ${blob.size} bytes`);
+              } else {
+                console.warn(`Audio blob is empty for event ${event.id}`);
               }
+            } else {
+              console.log(`Audio not available for event ${event.id}`);
             }
           } catch (err) {
             console.error('Failed to download audio for event:', event.id, err);
@@ -123,6 +147,15 @@ export function BrowseTrips() {
         studentEmail: userEmail,
         classId: selectedClass.id
       };
+
+      console.log('=== TRIP DOWNLOAD SUMMARY ===');
+      console.log('Trip ID:', tripToSave.id);
+      console.log('Total events:', eventsWithMedia.length);
+      console.log('Events with images:', eventsWithMedia.filter(e => e.imageBase64).length);
+      console.log('Events with audio:', eventsWithMedia.filter(e => e.audioBase64).length);
+      console.log('Events with video:', eventsWithMedia.filter(e => e.videoUrl || e.video_url).length);
+      console.log('First event full data:', eventsWithMedia[0]);
+      console.log('=== END SUMMARY ===');
 
       await saveTrip(tripToSave);
       await refreshTrips();

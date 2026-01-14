@@ -98,6 +98,11 @@ export function toSnakeCase(data) {
  * Middleware to automatically transform API responses to camelCase
  */
 export function transformResponseMiddleware(req, res, next) {
+  // Skip transformation for binary endpoints (image, audio, video)
+  if (req.path.includes('/image') || req.path.includes('/audio') || req.path.includes('/video')) {
+    return next();
+  }
+
   const originalJson = res.json.bind(res);
 
   res.json = function(data) {

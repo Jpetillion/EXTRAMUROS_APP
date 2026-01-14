@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Badge } from '../atoms/Badge.jsx';
+import { Icon } from '../atoms/Icon.jsx';
 import { sortByOrder } from '../../utils/helpers.js';
 import './ModuleList.css';
 
@@ -38,7 +39,7 @@ export function ModuleList({ modules, onModuleClick, completedContents = [] }) {
               <div className="module-list__title-section">
                 {hasContents && (
                   <span className="module-list__toggle">
-                    {isExpanded ? '▼' : '▶'}
+                    <Icon name={isExpanded ? 'caret-down' : 'caret-right'} size="small" />
                   </span>
                 )}
                 <h3 className="module-list__title">{module.title}</h3>
@@ -72,13 +73,15 @@ export function ModuleList({ modules, onModuleClick, completedContents = [] }) {
                       onClick={() => onModuleClick && onModuleClick(module.id, content.id)}
                     >
                       <span className="module-list__content-icon">
-                        {getContentIcon(content.type)}
+                        <Icon name={getContentIcon(content.type)} size="small" />
                       </span>
                       <span className="module-list__content-title">
                         {content.title}
                       </span>
                       {isCompleted && (
-                        <span className="module-list__content-check">✓</span>
+                        <span className="module-list__content-check">
+                          <Icon name="check" size="small" color="var(--color-success)" />
+                        </span>
                       )}
                     </div>
                   );
@@ -94,12 +97,13 @@ export function ModuleList({ modules, onModuleClick, completedContents = [] }) {
 
 function getContentIcon(type) {
   const icons = {
-    text: '📝',
-    image: '🖼️',
-    audio: '🎵',
-    location: '📍',
-    schedule: '📅',
-    activity: '✓'
+    text: 'text',
+    image: 'image',
+    audio: 'audio',
+    video: 'video',
+    location: 'location',
+    schedule: 'schedule',
+    activity: 'activity'
   };
-  return icons[type] || '📄';
+  return icons[type] || 'text';
 }

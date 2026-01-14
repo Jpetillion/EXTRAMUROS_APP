@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/organisms/Header.jsx';
 import { Button } from '../components/atoms/Button.jsx';
 import { Badge } from '../components/atoms/Badge.jsx';
+import { Icon } from '../components/atoms/Icon.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 import { useTripContext } from '../context/TripContext.jsx';
 import { useOfflineContext } from '../context/OfflineContext.jsx';
 import { useStorage } from '../hooks/useStorage.js';
@@ -13,6 +15,7 @@ import './Settings.css';
 
 export function Settings() {
   const navigate = useNavigate();
+  const { userEmail, selectedClass, logout } = useAuth();
   const { downloadedTrips, refreshTrips } = useTripContext();
   const { isOnline, isSyncing, lastSyncTime } = useOfflineContext();
   const { storageInfo, refresh: refreshStorage } = useStorage();
@@ -63,18 +66,71 @@ export function Settings() {
     }
   };
 
+  const handleChangeClass = () => {
+    if (confirm('Are you sure you want to change your class? You will need to select a new class.')) {
+      logout();
+      navigate('/login');
+    }
+  };
+
+  const handleLogout = () => {
+    if (confirm('Are you sure you want to log out?')) {
+      logout();
+      navigate('/login');
+    }
+  };
+
   return (
     <div className="settings">
       <Header title="Settings" showBack={true} />
 
       <div className="settings__container">
         <section className="settings__section">
+          <h3 className="settings__section-title">Account</h3>
+          <div className="settings__card">
+            <div className="settings__row">
+              <span className="settings__label">Email</span>
+              <span className="settings__value">{userEmail}</span>
+            </div>
+
+            <div className="settings__row">
+              <span className="settings__label">Class</span>
+              <Badge variant="primary">{selectedClass?.name || 'Unknown'}</Badge>
+            </div>
+
+            <div className="settings__actions">
+              <Button
+                variant="secondary"
+                fullWidth
+                onClick={handleChangeClass}
+              >
+                <Icon name="users" size="medium" />
+                {' '}
+                Change Class
+              </Button>
+
+              <Button
+                variant="danger"
+                fullWidth
+                onClick={handleLogout}
+              >
+                <Icon name="logout" size="medium" />
+                {' '}
+                Log Out
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        <section className="settings__section">
           <h3 className="settings__section-title">Connection Status</h3>
           <div className="settings__card">
             <div className="settings__row">
               <span className="settings__label">Status</span>
               <Badge variant={isOnline ? 'online' : 'offline'}>
-                {isOnline ? '🌐 Online' : '📵 Offline'}
+                <Icon name={isOnline ? 'online' : 'offline'} size="small" />
+                {' '}
+                {isOnline ? 'Online' : 'Offline'}
               </Badge>
             </div>
 
@@ -93,8 +149,9 @@ export function Settings() {
                 fullWidth
                 onClick={handleSync}
                 disabled={!isOnline || isSyncing}
-                icon="🔄"
               >
+                <Icon name="sync" size="medium" />
+                {' '}
                 {isSyncing ? 'Syncing...' : 'Sync Now'}
               </Button>
             </div>
@@ -132,8 +189,9 @@ export function Settings() {
                 variant="secondary"
                 fullWidth
                 onClick={refreshStorage}
-                icon="🔄"
               >
+                <Icon name="sync" size="medium" />
+                {' '}
                 Refresh Storage Info
               </Button>
 
@@ -142,8 +200,9 @@ export function Settings() {
                 fullWidth
                 onClick={handleClearAll}
                 disabled={isClearing || downloadedTrips.length === 0}
-                icon="🗑️"
               >
+                <Icon name="delete" size="medium" />
+                {' '}
                 {isClearing ? 'Clearing...' : 'Clear All Data'}
               </Button>
             </div>
@@ -163,8 +222,9 @@ export function Settings() {
                 variant="secondary"
                 fullWidth
                 onClick={handleInstallApp}
-                icon="📱"
               >
+                <Icon name="download" size="medium" />
+                {' '}
                 Install App
               </Button>
 
@@ -172,8 +232,9 @@ export function Settings() {
                 variant="ghost"
                 fullWidth
                 onClick={() => navigate('/')}
-                icon="🏠"
               >
+                <Icon name="home" size="medium" />
+                {' '}
                 Back to Home
               </Button>
             </div>

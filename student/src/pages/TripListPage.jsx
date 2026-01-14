@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/organisms/Header.jsx';
 import { TripList } from '../components/organisms/TripList.jsx';
 import { Button } from '../components/atoms/Button.jsx';
+import { Icon } from '../components/atoms/Icon.jsx';
 import { useTripContext } from '../context/TripContext.jsx';
 import { useOfflineContext } from '../context/OfflineContext.jsx';
 import './TripListPage.css';
@@ -38,14 +39,17 @@ export function TripListPage() {
 
         {isOnline && downloadedTrips.length === 0 && (
           <div className="trip-list-page__empty">
-            <div className="trip-list-page__empty-icon">🗺️</div>
+            <div className="trip-list-page__empty-icon">
+              <Icon name="map" size="xlarge" color="var(--color-gray-400)" />
+            </div>
             <h3>No Downloaded Trips</h3>
             <p>Browse and download trips to access them offline.</p>
             <Button
               variant="primary"
               onClick={() => navigate('/browse')}
-              icon="⬇️"
             >
+              <Icon name="download" size="medium" />
+              {' '}
               Browse Trips
             </Button>
           </div>

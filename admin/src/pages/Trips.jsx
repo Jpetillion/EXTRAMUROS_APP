@@ -357,7 +357,7 @@ const Trips = () => {
                     variant="ghost"
                     onClick={() => navigate(`/trips/${trip.id}`)}
                   >
-                    View
+                    Details
                   </Button>
                   <Button
                     size="small"

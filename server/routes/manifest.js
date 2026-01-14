@@ -1,11 +1,10 @@
 import express from 'express';
 import {
   getTripById,
-  getModulesByTripId,
-  getPublishedContentByTripId,
-  getTripStopsByTripId,
+  getTripEventsByTripId,
   createManifest,
-  getManifestByTripId
+  getManifestByTripId,
+  getClassesByTripId
 } from '../models/db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 
@@ -20,92 +19,61 @@ router.post('/:tripId/generate', authMiddleware, requireRole('teacher', 'admin')
       return res.status(404).json({ error: 'Trip not found' });
     }
 
-    // Get all modules for the trip
-    const modules = await getModulesByTripId(trip.id);
+    // Get all events for the trip
+    const events = await getTripEventsByTripId(trip.id);
 
-    // Get all published content for the trip
-    const contentItems = await getPublishedContentByTripId(trip.id);
+    // Get assigned classes
+    const classes = await getClassesByTripId(trip.id);
 
-    // Get all trip stops
-    const tripStops = await getTripStopsByTripId(trip.id);
-
-    // Group content by module
-    const moduleMap = {};
-    for (const module of modules) {
-      moduleMap[module.id] = {
-        ...module,
-        content: []
-      };
+    // Count assets (images and audio files)
+    let assetsCount = 0;
+    for (const event of events) {
+      if (event.image_blob) assetsCount++;
+      if (event.audio_blob) assetsCount++;
+      if (event.video_url) assetsCount++; // Video URLs count as assets
     }
+    if (trip.cover_image_blob) assetsCount++;
 
-    // Add content to modules
-    for (const item of contentItems) {
-      if (moduleMap[item.module_id]) {
-        // Parse metadata if it exists
-        const metadata = item.metadata ? JSON.parse(item.metadata) : null;
-
-        moduleMap[item.module_id].content.push({
-          id: item.id,
-          type: item.type,
-          title: item.title,
-          body: item.body,
-          mediaUrl: item.media_url,
-          thumbnailUrl: item.thumbnail_url,
-          metadata,
-          orderIndex: item.order_index
-        });
-      }
-    }
-
-    // Build manifest
+    // Create manifest object
     const manifest = {
-      tripId: trip.id,
       version: trip.manifest_version,
       trip: {
         id: trip.id,
         title: trip.title,
         description: trip.description,
-        destination: trip.destination,
-        startDate: trip.start_date,
-        endDate: trip.end_date,
-        coverImageUrl: trip.cover_image_url
+        published: trip.published,
+        createdAt: trip.created_at,
+        updatedAt: trip.updated_at,
+        hasCoverImage: !!trip.cover_image_blob
       },
-      modules: Object.values(moduleMap),
-      stops: tripStops.map(stop => ({
-        id: stop.id,
-        title: stop.title,
-        durationMinutes: stop.duration_minutes,
-        difficulty: stop.difficulty,
-        category: stop.category,
-        lat: stop.lat,
-        lng: stop.lng,
-        address: stop.address,
-        pictureUrl: stop.picture_url,
-        audioUrl: stop.audio_url,
-        videoUrl: stop.video_url,
-        orderIndex: stop.order_index,
-        metadata: stop.metadata ? JSON.parse(stop.metadata) : null
+      events: events.map(event => ({
+        id: event.id,
+        title: event.title,
+        category: event.category,
+        durationMinutes: event.duration_minutes,
+        textContent: event.text_content,
+        lat: event.lat,
+        lng: event.lng,
+        address: event.address,
+        hasImage: !!event.image_blob,
+        imageMimeType: event.image_mime_type,
+        hasAudio: !!event.audio_blob,
+        audioMimeType: event.audio_mime_type,
+        videoUrl: event.video_url,
+        orderIndex: event.order_index,
+        metadata: event.metadata ? JSON.parse(event.metadata) : null
       })),
+      classes: classes.map(c => ({
+        id: c.id,
+        name: c.name,
+        schoolYear: c.school_year
+      })),
+      assetsCount,
       generatedAt: new Date().toISOString()
     };
 
-    // Count assets (images, audio, video from content items)
-    let assetsCount = contentItems.filter(item =>
-      ['image', 'audio', 'video'].includes(item.type) && item.media_url
-    ).length;
-
-    // Count assets from trip stops
-    for (const stop of tripStops) {
-      if (stop.picture_url) assetsCount++;
-      if (stop.audio_url) assetsCount++;
-      if (stop.video_url) assetsCount++;
-    }
-
-    // Count cover image if exists
-    if (trip.cover_image_url) assetsCount++;
-
     // Save manifest to database
-    await createManifest(
+    const manifestId = await createManifest(
       trip.id,
       trip.manifest_version,
       JSON.stringify(manifest),
@@ -113,27 +81,38 @@ router.post('/:tripId/generate', authMiddleware, requireRole('teacher', 'admin')
     );
 
     res.json({
-      message: 'Manifest generated successfully',
-      manifest
+      manifestId,
+      manifest,
+      message: 'Manifest generated successfully'
     });
+
   } catch (error) {
     console.error('Generate manifest error:', error);
     res.status(500).json({ error: 'Failed to generate manifest' });
   }
 });
 
-// Get manifest for a trip (public endpoint for students)
+// Get manifest for a trip (public)
 router.get('/:tripId', async (req, res) => {
   try {
-    const manifestRecord = await getManifestByTripId(req.params.tripId);
+    const manifest = await getManifestByTripId(req.params.tripId);
 
-    if (!manifestRecord) {
+    if (!manifest) {
       return res.status(404).json({ error: 'Manifest not found' });
     }
 
-    const manifest = JSON.parse(manifestRecord.content);
+    // Parse content JSON
+    const content = JSON.parse(manifest.content);
 
-    res.json(manifest);
+    res.json({
+      id: manifest.id,
+      tripId: manifest.trip_id,
+      version: manifest.version,
+      assetsCount: manifest.assets_count,
+      publishedAt: manifest.published_at,
+      manifest: content
+    });
+
   } catch (error) {
     console.error('Get manifest error:', error);
     res.status(500).json({ error: 'Failed to fetch manifest' });

@@ -1,4 +1,5 @@
 import { Badge } from '../atoms/Badge.jsx';
+import { Icon } from '../atoms/Icon.jsx';
 import { formatDate } from '../../utils/helpers.js';
 import './TripCard.css';
 
@@ -30,12 +31,16 @@ export function TripCard({
         <div className="trip-card__meta">
           {trip.location && (
             <span className="trip-card__location">
-              📍 {trip.location}
+              <Icon name="location" size="small" />
+              {' '}
+              {trip.location}
             </span>
           )}
           {trip.date && (
             <span className="trip-card__date">
-              📅 {formatDate(trip.date)}
+              <Icon name="schedule" size="small" />
+              {' '}
+              {formatDate(trip.date)}
             </span>
           )}
         </div>

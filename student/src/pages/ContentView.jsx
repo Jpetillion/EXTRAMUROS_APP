@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '../components/organisms/Header.jsx';
 import { ContentViewer } from '../components/organisms/ContentViewer.jsx';
 import { Button } from '../components/atoms/Button.jsx';
+import { Icon } from '../components/atoms/Icon.jsx';
 import { Spinner } from '../components/atoms/Spinner.jsx';
 import { getContent, getAsset, saveProgress, getProgress } from '../utils/storage.js';
 import { createBlobUrl } from '../utils/helpers.js';
@@ -118,8 +119,9 @@ export function ContentView() {
               size="large"
               fullWidth
               onClick={handleMarkComplete}
-              icon="✓"
             >
+              <Icon name="check" size="medium" />
+              {' '}
               Mark as Complete
             </Button>
           ) : (
@@ -128,8 +130,9 @@ export function ContentView() {
               size="large"
               fullWidth
               disabled
-              icon="✓"
             >
+              <Icon name="success" size="medium" />
+              {' '}
               Completed
             </Button>
           )}
@@ -140,6 +143,8 @@ export function ContentView() {
             fullWidth
             onClick={() => navigate(-1)}
           >
+            <Icon name="back" size="medium" />
+            {' '}
             Back to Trip
           </Button>
         </div>

@@ -1,4 +1,5 @@
 import { Button } from '../atoms/Button.jsx';
+import { Icon } from '../atoms/Icon.jsx';
 import { ProgressBar } from '../atoms/ProgressBar.jsx';
 import { Spinner } from '../atoms/Spinner.jsx';
 import './DownloadButton.css';
@@ -58,8 +59,9 @@ export function DownloadButton({
       <Button
         variant="primary"
         onClick={() => onDownload(tripId)}
-        icon="⬇️"
       >
+        <Icon name="download" size="medium" />
+        {' '}
         Download Trip
       </Button>
     </div>

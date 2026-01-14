@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { statsAPI } from '../utils/api';
 import { useToast } from '../hooks/useToast';
 import Card from '../components/molecules/Card';
@@ -11,11 +11,12 @@ const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
   const { error } = useToast();
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [location.key]); // Refetch when navigating back to dashboard
 
   const fetchStats = async () => {
     try {

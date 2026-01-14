@@ -135,7 +135,7 @@ Expected output:
 ✅ Student user created: student@school.be
 
 📋 Login credentials:
-Admin: admin@school.be / ChangeMe123!
+Admin: admin@school.be / changeme123
 Teacher: teacher@school.be / teacher123
 Student: student@school.be / student123
 ```

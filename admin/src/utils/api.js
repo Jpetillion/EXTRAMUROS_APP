@@ -92,6 +92,18 @@ export const tripsAPI = {
   delete: (id) => api.delete(`/trips/${id}`),
   publish: (id) => api.post(`/trips/${id}/publish`),
   unpublish: (id) => api.post(`/trips/${id}/unpublish`),
+  getEvents: (id) => api.get(`/trips/${id}/events`),
+  createEvent: (id, data) => api.post(`/trips/${id}/events`, data),
+  updateEvent: (id, eventId, data) => api.put(`/trips/${id}/events/${eventId}`, data),
+  deleteEvent: (id, eventId) => api.delete(`/trips/${id}/events/${eventId}`),
+  getClasses: (id) => api.get(`/trips/${id}/classes`),
+  assignClass: (id, classId) => api.post(`/trips/${id}/classes/${classId}`),
+  removeClass: (id, classId) => api.delete(`/trips/${id}/classes/${classId}`),
+  getProgress: (id) => api.get(`/stats/trips/${id}/progress`),
+  getTeachers: (id) => api.get(`/trips/${id}/teachers`),
+  assignTeacher: (id, userId, data) => api.post(`/trips/${id}/teachers/${userId}`, data),
+  updateTeacher: (id, userId, data) => api.put(`/trips/${id}/teachers/${userId}`, data),
+  removeTeacher: (id, userId) => api.delete(`/trips/${id}/teachers/${userId}`),
 };
 
 export const stopsAPI = {
@@ -162,6 +174,26 @@ export const uploadsAPI = {
 export const statsAPI = {
   getDashboard: () => api.get('/stats/dashboard'),
   getTripStats: (tripId) => api.get(`/stats/trips/${tripId}`),
+};
+
+export const classesAPI = {
+  getAll: () => api.get('/classes'),
+  getById: (id) => api.get(`/classes/${id}`),
+  create: (data) => api.post('/classes', data),
+  update: (id, data) => api.put(`/classes/${id}`, data),
+  delete: (id) => api.delete(`/classes/${id}`),
+  getTrips: (id) => api.get(`/classes/${id}/trips`),
+  assignTrip: (classId, tripId) => api.post(`/classes/${classId}/trips/${tripId}`),
+  removeTrip: (classId, tripId) => api.delete(`/classes/${classId}/trips/${tripId}`),
+};
+
+export const usersAPI = {
+  getAll: (params) => api.get('/users', { params }),
+  getById: (id) => api.get(`/users/${id}`),
+  create: (data) => api.post('/users', data),
+  update: (id, data) => api.put(`/users/${id}`, data),
+  delete: (id) => api.delete(`/users/${id}`),
+  getAllTeachers: () => api.get('/users?role=teacher'),
 };
 
 export default api;

@@ -1,4 +1,5 @@
 import { Badge } from '../atoms/Badge.jsx';
+import { Icon } from '../atoms/Icon.jsx';
 import { useOfflineContext } from '../../context/OfflineContext.jsx';
 import './OfflineBadge.css';
 
@@ -13,11 +14,15 @@ export function OfflineBadge() {
     <div className="offline-badge">
       {isSyncing ? (
         <Badge variant="info" size="small">
-          🔄 Syncing...
+          <Icon name="sync" size="small" />
+          {' '}
+          Syncing...
         </Badge>
       ) : (
         <Badge variant="offline" size="small">
-          📵 Offline
+          <Icon name="offline" size="small" />
+          {' '}
+          Offline
         </Badge>
       )}
     </div>

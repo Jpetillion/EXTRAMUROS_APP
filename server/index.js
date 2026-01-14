@@ -5,8 +5,10 @@ import cors from 'cors';
 import { transformResponseMiddleware } from './utils/transform.js';
 import authRoutes from './routes/auth.js';
 import tripRoutes from './routes/trips.js';
-import moduleRoutes from './routes/modules.js';
-import contentRoutes from './routes/content.js';
+import classesRoutes from './routes/classes.js';
+import usersRoutes from './routes/users.js';
+// import moduleRoutes from './routes/modules.js'; // Removed - using events instead
+// import contentRoutes from './routes/content.js'; // Removed - using events instead
 import manifestRoutes from './routes/manifest.js';
 import uploadRoutes from './routes/upload.js';
 import statsRoutes from './routes/stats.js';
@@ -36,8 +38,10 @@ app.get('/api/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/trips', tripRoutes);
-app.use('/api/modules', moduleRoutes);
-app.use('/api/content', contentRoutes);
+app.use('/api/classes', classesRoutes);
+app.use('/api/users', usersRoutes);
+// app.use('/api/modules', moduleRoutes); // Removed - using events instead
+// app.use('/api/content', contentRoutes); // Removed - using events instead
 app.use('/api/manifest', manifestRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/stats', statsRoutes);

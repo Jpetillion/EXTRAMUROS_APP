@@ -1,5 +1,6 @@
 import { TripCard } from '../molecules/TripCard.jsx';
 import { Button } from '../atoms/Button.jsx';
+import { Icon } from '../atoms/Icon.jsx';
 import { Spinner } from '../atoms/Spinner.jsx';
 import './TripList.css';
 
@@ -40,8 +41,9 @@ export function TripList({
                 variant="danger"
                 size="small"
                 onClick={() => onDelete(trip.id)}
-                icon="🗑️"
               >
+                <Icon name="delete" size="small" />
+                {' '}
                 Delete
               </Button>
             )

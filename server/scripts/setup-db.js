@@ -21,16 +21,14 @@ const createTables = async () => {
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)`);
 
-  // Trips table
+  // Trips table - simplified (removed destination, start_date, end_date)
   await db.execute(`
     CREATE TABLE IF NOT EXISTS trips (
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
       description TEXT,
-      destination TEXT NOT NULL,
-      start_date TEXT NOT NULL,
-      end_date TEXT NOT NULL,
-      cover_image_url TEXT,
+      cover_image_blob BLOB,
+      cover_image_mime_type TEXT,
       published INTEGER NOT NULL DEFAULT 0,
       manifest_version INTEGER NOT NULL DEFAULT 1,
       created_by TEXT NOT NULL,
@@ -43,49 +41,64 @@ const createTables = async () => {
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_trips_published ON trips(published)`);
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_trips_created_by ON trips(created_by)`);
 
-  // Modules table
+  // Trip events table (renamed from trip_stops, updated fields)
   await db.execute(`
-    CREATE TABLE IF NOT EXISTS modules (
+    CREATE TABLE IF NOT EXISTS trip_events (
       id TEXT PRIMARY KEY,
       trip_id TEXT NOT NULL,
       title TEXT NOT NULL,
-      description TEXT,
+      category TEXT,
+      duration_minutes INTEGER,
+      text_content TEXT,
+      lat REAL,
+      lng REAL,
+      address TEXT,
+      image_blob BLOB,
+      image_mime_type TEXT,
+      audio_blob BLOB,
+      audio_mime_type TEXT,
+      video_url TEXT,
       order_index INTEGER NOT NULL DEFAULT 0,
-      icon TEXT,
+      metadata TEXT,
       created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
       updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
       FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
     )
   `);
 
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_modules_trip_id ON modules(trip_id)`);
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_modules_order ON modules(trip_id, order_index)`);
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_trip_events_trip_id ON trip_events(trip_id)`);
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_trip_events_order ON trip_events(trip_id, order_index)`);
 
-  // Content items table
+  // Classes table
   await db.execute(`
-    CREATE TABLE IF NOT EXISTS content_items (
+    CREATE TABLE IF NOT EXISTS classes (
       id TEXT PRIMARY KEY,
-      trip_id TEXT NOT NULL,
-      module_id TEXT NOT NULL,
-      type TEXT NOT NULL CHECK(type IN ('text', 'image', 'audio', 'video', 'location', 'activity', 'schedule')),
-      title TEXT NOT NULL,
-      body TEXT,
-      media_url TEXT,
-      thumbnail_url TEXT,
-      metadata TEXT,
-      order_index INTEGER NOT NULL DEFAULT 0,
-      published INTEGER NOT NULL DEFAULT 0,
+      name TEXT NOT NULL,
+      school_year TEXT,
+      created_by TEXT NOT NULL,
       created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
       updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
-      FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
-      FOREIGN KEY (module_id) REFERENCES modules(id) ON DELETE CASCADE
+      FOREIGN KEY (created_by) REFERENCES users(id)
     )
   `);
 
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_content_items_trip_id ON content_items(trip_id)`);
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_content_items_module_id ON content_items(module_id)`);
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_content_items_published ON content_items(published)`);
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_content_items_order ON content_items(module_id, order_index)`);
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_classes_created_by ON classes(created_by)`);
+
+  // Trip-Class association table (many-to-many)
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS trip_classes (
+      id TEXT PRIMARY KEY,
+      trip_id TEXT NOT NULL,
+      class_id TEXT NOT NULL,
+      assigned_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+      FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
+      FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+      UNIQUE(trip_id, class_id)
+    )
+  `);
+
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_trip_classes_trip_id ON trip_classes(trip_id)`);
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_trip_classes_class_id ON trip_classes(class_id)`);
 
   // Manifests table
   await db.execute(`
@@ -103,25 +116,31 @@ const createTables = async () => {
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_manifests_trip_id ON manifests(trip_id)`);
   await db.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_manifests_trip_version ON manifests(trip_id, version)`);
 
-  // Student downloads table
+  // Student progress table (tracks email + trip/event completion)
   await db.execute(`
-    CREATE TABLE IF NOT EXISTS student_downloads (
+    CREATE TABLE IF NOT EXISTS student_progress (
       id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
+      email TEXT NOT NULL,
       trip_id TEXT NOT NULL,
-      manifest_version INTEGER NOT NULL,
-      downloaded_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
-      last_accessed_at INTEGER,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
+      event_id TEXT,
+      class_id TEXT,
+      completed INTEGER NOT NULL DEFAULT 0,
+      progress_data TEXT,
+      last_accessed_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+      FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
+      FOREIGN KEY (event_id) REFERENCES trip_events(id) ON DELETE CASCADE,
+      FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE SET NULL
     )
   `);
 
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_student_downloads_user_id ON student_downloads(user_id)`);
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_student_downloads_trip_id ON student_downloads(trip_id)`);
-  await db.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_student_downloads_user_trip ON student_downloads(user_id, trip_id)`);
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_student_progress_email ON student_progress(email)`);
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_student_progress_trip_id ON student_progress(trip_id)`);
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_student_progress_event_id ON student_progress(event_id)`);
 
   console.log('✅ Database tables created successfully!');
+  console.log('');
+  console.log('📝 Note: Old tables (modules, content_items, trip_stops, student_downloads) are not created.');
+  console.log('   If you have existing data, you may want to migrate it or drop those tables.');
 };
 
 createTables().catch((error) => {

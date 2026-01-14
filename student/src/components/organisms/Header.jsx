@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../atoms/Button.jsx';
+import { Icon } from '../atoms/Icon.jsx';
 import { OfflineBadge } from '../molecules/OfflineBadge.jsx';
 import './Header.css';
 
@@ -18,8 +19,9 @@ export function Header({ title, showBack = false }) {
               variant="ghost"
               size="small"
               onClick={() => navigate(-1)}
-              icon="←"
-            />
+            >
+              <Icon name="back" size="medium" />
+            </Button>
           )}
         </div>
 
@@ -34,8 +36,9 @@ export function Header({ title, showBack = false }) {
               variant="ghost"
               size="small"
               onClick={() => navigate('/settings')}
-              icon="⚙️"
-            />
+            >
+              <Icon name="settings" size="medium" />
+            </Button>
           )}
         </div>
       </div>

@@ -7,6 +7,7 @@ import Button from '../components/atoms/Button';
 import Badge from '../components/atoms/Badge';
 import Spinner from '../components/atoms/Spinner';
 import Modal from '../components/molecules/Modal';
+import ConfirmModal from '../components/molecules/ConfirmModal';
 import EventForm from '../components/organisms/EventForm';
 import styles from './TripDetail.module.css';
 
@@ -39,6 +40,9 @@ const TripDetail = () => {
 
   // Progress modal
   const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
+
+  // Confirm modal for class removal
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, classId: null, className: '' });
 
   useEffect(() => {
     fetchTripData();
@@ -240,19 +244,17 @@ const TripDetail = () => {
   // Publish/Unpublish handlers
   const handleTogglePublish = async () => {
     try {
-      const endpoint = trip.published ? 'unpublish' : 'publish';
-      const response = await fetch(`/api/trips/${id}/${endpoint}`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-
-      if (!response.ok) throw new Error(`Failed to ${endpoint} trip`);
+      if (trip.published) {
+        await tripsAPI.unpublish(id);
+      } else {
+        await tripsAPI.publish(id);
+      }
 
       success(`Trip ${trip.published ? 'unpublished' : 'published'} successfully`);
       fetchTripData();
     } catch (err) {
       console.error('Failed to toggle publish:', err);
-      showError('Failed to update trip status');
+      showError(err.response?.data?.error || 'Failed to update trip status');
     }
   };
 
@@ -289,10 +291,20 @@ const TripDetail = () => {
     }
   };
 
-  const handleRemoveClass = async (classId) => {
-    if (!window.confirm('Are you sure you want to remove this class from the trip?')) {
-      return;
-    }
+  const handleRemoveClassClick = (classData) => {
+    console.log('Remove class clicked:', classData);
+    const classId = classData.id || classData.classId || classData.class_id;
+    console.log('Extracted classId:', classId);
+    setConfirmModal({
+      isOpen: true,
+      classId: classId,
+      className: classData.name || classData.className || classData.class_name || ''
+    });
+  };
+
+  const handleRemoveClass = async () => {
+    const classId = confirmModal.classId;
+    console.log('Removing class with ID:', classId, 'from trip:', id);
 
     try {
       const token = localStorage.getItem('token');
@@ -306,12 +318,22 @@ const TripDetail = () => {
         headers
       });
 
-      if (!response.ok) throw new Error('Failed to remove class');
+      console.log('Delete response status:', response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Delete failed:', errorText);
+        throw new Error('Failed to remove class');
+      }
+
+      // Close the modal first
+      setConfirmModal({ isOpen: false, classId: null, className: '' });
 
       success('Class removed successfully');
       fetchTripData();
     } catch (err) {
       console.error('Failed to remove class:', err);
+      // Close modal even on error
+      setConfirmModal({ isOpen: false, classId: null, className: '' });
       showError('Failed to remove class');
     }
   };
@@ -458,7 +480,7 @@ const TripDetail = () => {
                 <Button
                   size="small"
                   variant="ghost"
-                  onClick={() => handleRemoveClass(cls.id)}
+                  onClick={() => handleRemoveClassClick(cls)}
                 >
                   Remove
                 </Button>
@@ -813,6 +835,17 @@ const TripDetail = () => {
           </div>
         )}
       </Modal>
+
+      {/* Confirm Modal for Class Removal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, classId: null, className: '' })}
+        onConfirm={handleRemoveClass}
+        title="Remove Class"
+        message={`Are you sure you want to remove ${confirmModal.className ? `"${confirmModal.className}"` : 'this class'} from the trip?`}
+        confirmText="Remove"
+        variant="danger"
+      />
     </div>
   );
 };

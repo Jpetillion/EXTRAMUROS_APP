@@ -50,14 +50,6 @@ const Dashboard = () => {
 
   return (
     <div className={styles.dashboard}>
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Dashboard</h1>
-          <p className={styles.subtitle}>Welcome to Extra Muros Admin Panel</p>
-        </div>
-        <Button onClick={() => navigate('/trips')}>Manage Trips</Button>
-      </div>
-
       <div className={styles.statsGrid}>
         <Card className={styles.statCard}>
           <div className={styles.statContent}>
@@ -185,25 +177,73 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      <div className={styles.quickActions}>
-        <Card title="Quick Actions">
-          <div className={styles.actionsGrid}>
-            <Button
-              variant="primary"
-              fullWidth
-              onClick={() => navigate('/trips')}
-            >
-              View All Trips
-            </Button>
-            <Button
-              variant="success"
-              fullWidth
-              onClick={() => navigate('/trips?action=create')}
-            >
-              Create New Trip
-            </Button>
-          </div>
-        </Card>
+      <div className={styles.actionsSection}>
+        <h2 className={styles.sectionTitle}>Quick Actions</h2>
+        <div className={styles.actionsGrid}>
+          <Card className={styles.actionCard} onClick={() => navigate('/trips')}>
+            <div className={styles.actionIcon} style={{ backgroundColor: '#dbeafe' }}>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#2563eb"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+            </div>
+            <h3 className={styles.actionTitle}>Manage Trips</h3>
+            <p className={styles.actionDescription}>View, edit, and organize all trips</p>
+          </Card>
+
+          <Card className={styles.actionCard} onClick={() => navigate('/classes')}>
+            <div className={styles.actionIcon} style={{ backgroundColor: '#e0e7ff' }}>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#6366f1"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+            </div>
+            <h3 className={styles.actionTitle}>Manage Classes</h3>
+            <p className={styles.actionDescription}>Create and assign trips to classes</p>
+          </Card>
+
+          <Card className={styles.actionCard} onClick={() => navigate('/users')}>
+            <div className={styles.actionIcon} style={{ backgroundColor: '#fce7f3' }}>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#ec4899"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <h3 className={styles.actionTitle}>Manage Users</h3>
+            <p className={styles.actionDescription}>Add and manage teacher accounts</p>
+          </Card>
+        </div>
       </div>
     </div>
   );

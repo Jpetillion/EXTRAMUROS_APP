@@ -4,9 +4,12 @@ import { Header } from '../components/organisms/Header.jsx';
 import { Button } from '../components/atoms/Button.jsx';
 import { Badge } from '../components/atoms/Badge.jsx';
 import { Icon } from '../components/atoms/Icon.jsx';
+import ConfirmModal from '../components/molecules/ConfirmModal.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTripContext } from '../context/TripContext.jsx';
 import { useOfflineContext } from '../context/OfflineContext.jsx';
+import { useToast } from '../hooks/useToast.js';
+import { useConfirm } from '../hooks/useConfirm.js';
 import { useStorage } from '../hooks/useStorage.js';
 import { useSync } from '../hooks/useSync.js';
 import { clearAllData, getStorageSize } from '../utils/storage.js';
@@ -20,6 +23,8 @@ export function Settings() {
   const { isOnline, isSyncing, lastSyncTime } = useOfflineContext();
   const { storageInfo, refresh: refreshStorage } = useStorage();
   const { sync } = useSync();
+  const { success, error: showError, info } = useToast();
+  const { confirm, confirmState, handleClose } = useConfirm();
   const [isClearing, setIsClearing] = useState(false);
 
   useEffect(() => {
@@ -28,31 +33,36 @@ export function Settings() {
 
   const handleSync = async () => {
     if (!isOnline) {
-      alert('You need to be online to sync.');
+      showError('You need to be online to sync.');
       return;
     }
 
     try {
       await sync();
-      alert('Sync completed successfully!');
+      success('Sync completed successfully!');
     } catch (error) {
-      alert('Sync failed. Please try again.');
+      showError('Sync failed. Please try again.');
     }
   };
 
   const handleClearAll = async () => {
-    if (!confirm('Are you sure you want to delete all downloaded trips and data? This cannot be undone.')) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Clear All Data',
+      message: 'Are you sure you want to delete all downloaded trips and data? This cannot be undone.',
+      confirmText: 'Delete All',
+      variant: 'danger',
+    });
+
+    if (!confirmed) return;
 
     try {
       setIsClearing(true);
       await clearAllData();
       await refreshTrips();
       await refreshStorage();
-      alert('All data cleared successfully!');
+      success('All data cleared successfully!');
     } catch (error) {
-      alert('Failed to clear data. Please try again.');
+      showError('Failed to clear data. Please try again.');
     } finally {
       setIsClearing(false);
     }
@@ -60,24 +70,38 @@ export function Settings() {
 
   const handleInstallApp = () => {
     if ('BeforeInstallPromptEvent' in window) {
-      alert('To install this app, use the "Add to Home Screen" option in your browser menu.');
+      info('To install this app, use the "Add to Home Screen" option in your browser menu.');
     } else {
-      alert('App installation is managed by your browser. Look for "Install" or "Add to Home Screen" in the menu.');
+      info('App installation is managed by your browser. Look for "Install" or "Add to Home Screen" in the menu.');
     }
   };
 
-  const handleChangeClass = () => {
-    if (confirm('Are you sure you want to change your class? You will need to select a new class.')) {
-      logout();
-      navigate('/login');
-    }
+  const handleChangeClass = async () => {
+    const confirmed = await confirm({
+      title: 'Change Class',
+      message: 'Are you sure you want to change your class? You will need to select a new class.',
+      confirmText: 'Change Class',
+      variant: 'primary',
+    });
+
+    if (!confirmed) return;
+
+    logout();
+    navigate('/login');
   };
 
-  const handleLogout = () => {
-    if (confirm('Are you sure you want to log out?')) {
-      logout();
-      navigate('/login');
-    }
+  const handleLogout = async () => {
+    const confirmed = await confirm({
+      title: 'Log Out',
+      message: 'Are you sure you want to log out?',
+      confirmText: 'Log Out',
+      variant: 'primary',
+    });
+
+    if (!confirmed) return;
+
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -254,6 +278,18 @@ export function Settings() {
           </div>
         </section>
       </div>
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmState.isOpen}
+        onClose={handleClose}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        confirmText={confirmState.confirmText}
+        cancelText={confirmState.cancelText}
+        variant={confirmState.variant}
+      />
     </div>
   );
 }

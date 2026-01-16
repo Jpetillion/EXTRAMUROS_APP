@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
+import { useConfirm } from '../hooks/useConfirm';
 import { formatDate } from '../utils/helpers';
 import { usersAPI } from '../utils/api';
 import Card from '../components/molecules/Card';
@@ -8,6 +9,7 @@ import Button from '../components/atoms/Button';
 import Badge from '../components/atoms/Badge';
 import Spinner from '../components/atoms/Spinner';
 import Modal from '../components/molecules/Modal';
+import ConfirmModal from '../components/molecules/ConfirmModal';
 import FormField from '../components/molecules/FormField';
 import styles from './Users.module.css';
 
@@ -19,6 +21,7 @@ const Users = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const { success, error: showError } = useToast();
+  const { confirm, confirmState, handleClose } = useConfirm();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -116,9 +119,14 @@ const Users = () => {
       return;
     }
 
-    if (!window.confirm('Are you sure you want to delete this teacher account?')) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Delete Teacher Account',
+      message: 'Are you sure you want to delete this teacher account? This action cannot be undone.',
+      confirmText: 'Delete',
+      variant: 'danger',
+    });
+
+    if (!confirmed) return;
 
     try {
       await usersAPI.delete(userId);
@@ -278,6 +286,18 @@ const Users = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmState.isOpen}
+        onClose={handleClose}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        confirmText={confirmState.confirmText}
+        cancelText={confirmState.cancelText}
+        variant={confirmState.variant}
+      />
     </div>
   );
 };

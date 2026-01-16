@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
+import { useConfirm } from '../hooks/useConfirm';
 import { formatDate } from '../utils/helpers';
 import { classesAPI } from '../utils/api';
 import Card from '../components/molecules/Card';
 import Button from '../components/atoms/Button';
 import Spinner from '../components/atoms/Spinner';
 import Modal from '../components/molecules/Modal';
+import ConfirmModal from '../components/molecules/ConfirmModal';
 import FormField from '../components/molecules/FormField';
 import styles from './Classes.module.css';
 
@@ -19,6 +21,7 @@ const Classes = () => {
 
   const navigate = useNavigate();
   const { success, error: showError } = useToast();
+  const { confirm, confirmState, handleClose } = useConfirm();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -116,9 +119,14 @@ const Classes = () => {
   };
 
   const handleDeleteClass = async (classId) => {
-    if (!window.confirm('Are you sure you want to delete this class? This will also remove it from all assigned trips.')) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Delete Class',
+      message: 'Are you sure you want to delete this class? This will also remove it from all assigned trips.',
+      confirmText: 'Delete',
+      variant: 'danger',
+    });
+
+    if (!confirmed) return;
 
     try {
       await classesAPI.delete(classId);
@@ -258,6 +266,18 @@ const Classes = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmState.isOpen}
+        onClose={handleClose}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        confirmText={confirmState.confirmText}
+        cancelText={confirmState.cancelText}
+        variant={confirmState.variant}
+      />
     </div>
   );
 };

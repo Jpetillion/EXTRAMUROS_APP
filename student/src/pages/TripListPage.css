@@ -1,27 +1,38 @@
 .trip-list-page {
   min-height: 100vh;
-  background: #f3f4f6;
+  background: var(--color-gray-50);
 }
 
 .trip-list-page__container {
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 2rem 1.5rem;
 }
 
 .trip-list-page__offline-notice {
-  background: #fef3c7;
-  border: 2px solid #f59e0b;
-  border-radius: 12px;
-  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  border: 2px solid var(--color-gray-200);
+  border-radius: 1rem;
+  padding: 3rem 2rem;
   text-align: center;
-  margin-bottom: 1.5rem;
+}
+
+.trip-list-page__offline-notice h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
 }
 
 .trip-list-page__offline-notice p {
   margin: 0;
-  color: #92400e;
-  font-weight: 500;
+  color: var(--color-gray-600);
+  font-size: 1.0625rem;
+  line-height: 1.6;
 }
 
 .trip-list-page__empty {
@@ -32,8 +43,9 @@
   padding: 4rem 2rem;
   text-align: center;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-gray-100);
 }
 
 .trip-list-page__empty-icon {
@@ -43,13 +55,15 @@
 
 .trip-list-page__empty h3 {
   margin: 0 0 0.75rem 0;
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-gray-900);
 }
 
 .trip-list-page__empty p {
   margin: 0 0 2rem 0;
-  color: #6b7280;
-  font-size: 1.125rem;
+  color: var(--color-gray-600);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  max-width: 400px;
 }

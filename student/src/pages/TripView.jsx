@@ -5,9 +5,30 @@ import { ModuleList } from '../components/organisms/ModuleList.jsx';
 import { Spinner } from '../components/atoms/Spinner.jsx';
 import { Badge } from '../components/atoms/Badge.jsx';
 import { Icon } from '../components/atoms/Icon.jsx';
+import { MapViewer } from '../components/molecules/MapViewer.jsx';
 import { getTrip, getModulesByTrip, getAllProgress } from '../utils/storage.js';
 import { formatDate } from '../utils/helpers.js';
 import './TripView.css';
+
+// Helper function to convert YouTube URLs to embed format
+function getYouTubeEmbedUrl(url) {
+  if (!url) return null;
+
+  // Already an embed URL
+  if (url.includes('youtube.com/embed/')) {
+    return url;
+  }
+
+  // Convert watch URL to embed URL
+  // Supports: youtube.com/watch?v=ID, youtu.be/ID
+  const videoIdMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  if (videoIdMatch && videoIdMatch[1]) {
+    return `https://www.youtube.com/embed/${videoIdMatch[1]}`;
+  }
+
+  // Return original if can't parse
+  return url;
+}
 
 export function TripView() {
   const { tripId } = useParams();
@@ -41,13 +62,18 @@ export function TripView() {
       console.log('Loaded trip data:', tripData);
       console.log('Trip has events:', tripData.events?.length);
       if (tripData.events && tripData.events.length > 0) {
-        console.log('First event:', tripData.events[0]);
-        console.log('First event has imageBase64:', !!tripData.events[0].imageBase64);
-        console.log('First event imageBase64 length:', tripData.events[0].imageBase64?.length);
-        console.log('First event imageBase64 preview:', tripData.events[0].imageBase64?.substring(0, 100));
-        console.log('First event has audioBase64:', !!tripData.events[0].audioBase64);
-        console.log('First event audioBase64 length:', tripData.events[0].audioBase64?.length);
-        console.log('First event has videoUrl:', !!tripData.events[0].videoUrl);
+        const firstEvent = tripData.events[0];
+        console.log('First event:', firstEvent);
+        console.log('First event has imageBase64:', !!firstEvent.imageBase64);
+        console.log('First event imageBase64 length:', firstEvent.imageBase64?.length);
+        console.log('First event imageBase64 preview:', firstEvent.imageBase64?.substring(0, 100));
+        console.log('First event has audioBase64:', !!firstEvent.audioBase64);
+        console.log('First event audioBase64 length:', firstEvent.audioBase64?.length);
+        console.log('First event has videoUrl:', !!firstEvent.videoUrl);
+        console.log('First event textContent:', firstEvent.textContent);
+        console.log('First event address:', firstEvent.address);
+        console.log('First event category:', firstEvent.category);
+        console.log('First event durationMinutes:', firstEvent.durationMinutes);
       }
       console.log('=== END TRIPVIEW DATA ===');
 
@@ -207,26 +233,43 @@ export function TripView() {
                 <div key={event.id} className="trip-view__event-card">
                   <div className="trip-view__event-number">{index + 1}</div>
                   <div className="trip-view__event-content">
-                    <h4 className="trip-view__event-title">{event.title}</h4>
-                    {event.category && (
-                      <Badge variant="info" size="small">{event.category}</Badge>
+                    {/* Header Section */}
+                    <div className="trip-view__event-header">
+                      <h4 className="trip-view__event-title">{event.title}</h4>
+                      {event.category && (
+                        <Badge variant="info" size="small">{event.category}</Badge>
+                      )}
+                    </div>
+
+                    {/* Meta Information */}
+                    {(event.address || event.durationMinutes) && (
+                      <div className="trip-view__event-meta">
+                        {event.address && (
+                          <div className="trip-view__event-meta-item">
+                            <Icon name="location" size="small" />
+                            <span>{event.address}</span>
+                          </div>
+                        )}
+                        {event.durationMinutes && (
+                          <div className="trip-view__event-meta-item">
+                            <Icon name="clock" size="small" />
+                            <span>{event.durationMinutes} minuten</span>
+                          </div>
+                        )}
+                      </div>
                     )}
+
+                    {/* Description Text */}
                     {event.textContent && (
                       <p className="trip-view__event-text">{event.textContent}</p>
                     )}
-                    {event.address && (
-                      <div className="trip-view__event-location">
-                        <Icon name="location" size="small" />
-                        {' '}
-                        {event.address}
-                      </div>
-                    )}
-                    {event.durationMinutes && (
-                      <div className="trip-view__event-duration">
-                        <Icon name="clock" size="small" />
-                        {' '}
-                        {event.durationMinutes} minutes
-                      </div>
+                    {(event.lat && event.lng) && (
+                      <MapViewer
+                        lat={event.lat}
+                        lng={event.lng}
+                        title={event.title}
+                        address={event.address}
+                      />
                     )}
                     {event.imageBase64 && (
                       <img
@@ -235,15 +278,24 @@ export function TripView() {
                         className="trip-view__event-image"
                       />
                     )}
-                    {event.audioBase64 && (
-                      <audio controls className="trip-view__event-audio">
-                        <source src={event.audioBase64} type={event.audioMimeType || 'audio/mpeg'} />
-                      </audio>
+                    {(event.audioBase64 || event.audioUrl) && (
+                      <div className="trip-view__event-audio-wrapper">
+                        <audio controls className="trip-view__event-audio">
+                          <source src={event.audioBase64 || event.audioUrl} type={event.audioMimeType || 'audio/mpeg'} />
+                        </audio>
+                        {event.audioUrl && !event.audioBase64 && (
+                          <p className="trip-view__audio-notice">
+                            <Icon name="wifi" size="small" />
+                            {' '}
+                            Audio streaming heeft internetverbinding nodig
+                          </p>
+                        )}
+                      </div>
                     )}
                     {(event.videoUrl || event.video_url) && (
                       <div className="trip-view__event-video">
                         <iframe
-                          src={event.videoUrl || event.video_url}
+                          src={getYouTubeEmbedUrl(event.videoUrl || event.video_url)}
                           title={event.title}
                           frameBorder="0"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

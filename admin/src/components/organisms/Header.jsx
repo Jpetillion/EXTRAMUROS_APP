@@ -1,4 +1,5 @@
 import { useAuth } from '../../hooks/useAuth';
+import { Backpack } from '@phosphor-icons/react';
 import Button from '../atoms/Button';
 import styles from './Header.module.css';
 
@@ -13,6 +14,9 @@ const Header = () => {
     <header className={styles.header}>
       <div className={styles.container}>
         <div className={styles.logo}>
+          <div className={styles.logoIcon}>
+            <Backpack size={24} weight="regular" color="white" />
+          </div>
           <h1>Extra Muros</h1>
           <span className={styles.badge}>Admin</span>
         </div>

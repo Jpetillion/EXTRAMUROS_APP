@@ -6,6 +6,7 @@ import { Badge } from '../components/atoms/Badge.jsx';
 import { Icon } from '../components/atoms/Icon.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTripContext } from '../context/TripContext.jsx';
+import { useToast } from '../hooks/useToast.js';
 import { saveTrip } from '../utils/storage.js';
 import './BrowseTrips.css';
 
@@ -15,6 +16,7 @@ export function BrowseTrips() {
   const navigate = useNavigate();
   const { selectedClass, userEmail } = useAuth();
   const { isTripDownloaded, refreshTrips } = useTripContext();
+  const { success, error: showError } = useToast();
 
   const [availableTrips, setAvailableTrips] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +35,12 @@ export function BrowseTrips() {
       setError('');
 
       const response = await fetch(`${API_URL}/api/classes/${selectedClass.id}/trips?published=true`);
+
+      if (response.status === 404) {
+        setError('Your class was not found. Please log out and log in again to select your class.');
+        setAvailableTrips([]);
+        return;
+      }
 
       if (!response.ok) {
         throw new Error('Failed to load trips');
@@ -111,21 +119,31 @@ export function BrowseTrips() {
             console.log(`Fetching audio for event ${event.id}...`);
             const audioResponse = await fetch(`${API_URL}/api/trips/${trip.id}/events/${event.id}/audio`);
             console.log(`Audio response status: ${audioResponse.status}, ok: ${audioResponse.ok}`);
-            console.log(`Audio Content-Length: ${audioResponse.headers.get('Content-Length')}`);
+            const contentLength = audioResponse.headers.get('Content-Length');
+            console.log(`Audio Content-Length: ${contentLength}`);
 
             if (audioResponse.ok && audioResponse.status === 200) {
-              const blob = await audioResponse.blob();
-              console.log(`Audio blob size: ${blob.size} bytes, type: ${blob.type}`);
-
-              // Only add if we got actual data
-              if (blob.size > 0) {
-                const base64 = await blobToBase64(blob);
-                console.log(`Audio base64 length: ${base64.length} chars`);
-                eventWithMedia.audioBase64 = base64;
-                eventWithMedia.audioMimeType = blob.type;
-                console.log(`✓ Downloaded audio for event ${event.id}: ${blob.size} bytes`);
+              // Check if file is too large (over 10MB)
+              if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
+                console.warn(`Audio file is too large (${Math.round(contentLength / 1024 / 1024)}MB), storing URL instead for event ${event.id}`);
+                // Store the server URL instead of downloading the file
+                eventWithMedia.audioUrl = `${API_URL}/api/trips/${trip.id}/events/${event.id}/audio`;
+                eventWithMedia.audioMimeType = audioResponse.headers.get('Content-Type') || 'audio/mpeg';
+                console.log(`✓ Stored audio URL for event ${event.id} (will stream from server)`);
               } else {
-                console.warn(`Audio blob is empty for event ${event.id}`);
+                const blob = await audioResponse.blob();
+                console.log(`Audio blob size: ${blob.size} bytes, type: ${blob.type}`);
+
+                // Only add if we got actual data
+                if (blob.size > 0) {
+                  const base64 = await blobToBase64(blob);
+                  console.log(`Audio base64 length: ${base64.length} chars`);
+                  eventWithMedia.audioBase64 = base64;
+                  eventWithMedia.audioMimeType = blob.type;
+                  console.log(`✓ Downloaded audio for event ${event.id}: ${blob.size} bytes`);
+                } else {
+                  console.warn(`Audio blob is empty for event ${event.id}`);
+                }
               }
             } else {
               console.log(`Audio not available for event ${event.id}`);
@@ -155,15 +173,21 @@ export function BrowseTrips() {
       console.log('Events with audio:', eventsWithMedia.filter(e => e.audioBase64).length);
       console.log('Events with video:', eventsWithMedia.filter(e => e.videoUrl || e.video_url).length);
       console.log('First event full data:', eventsWithMedia[0]);
+      if (eventsWithMedia[0]?.imageBase64) {
+        console.log('First event image preview:', eventsWithMedia[0].imageBase64.substring(0, 50));
+      }
+      if (eventsWithMedia[0]?.audioBase64) {
+        console.log('First event audio preview:', eventsWithMedia[0].audioBase64.substring(0, 50));
+      }
       console.log('=== END SUMMARY ===');
 
       await saveTrip(tripToSave);
       await refreshTrips();
 
-      alert('Trip downloaded successfully!');
+      success('Trip downloaded successfully!');
     } catch (err) {
       console.error('Failed to download trip:', err);
-      alert('Failed to download trip. Please try again.');
+      showError('Failed to download trip. Please try again.');
     } finally {
       setDownloading(prev => ({ ...prev, [trip.id]: false }));
     }

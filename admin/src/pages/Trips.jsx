@@ -2,12 +2,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { tripsAPI } from '../utils/api';
 import { useToast } from '../hooks/useToast';
+import { useConfirm } from '../hooks/useConfirm';
 import { formatDate } from '../utils/helpers';
 import Card from '../components/molecules/Card';
 import Button from '../components/atoms/Button';
 import Badge from '../components/atoms/Badge';
 import Spinner from '../components/atoms/Spinner';
 import Modal from '../components/molecules/Modal';
+import ConfirmModal from '../components/molecules/ConfirmModal';
 import TripForm from '../components/organisms/TripForm';
 import styles from './Trips.module.css';
 
@@ -20,6 +22,7 @@ const Trips = () => {
 
   const navigate = useNavigate();
   const { success, error } = useToast();
+  const { confirm, confirmState, handleClose } = useConfirm();
 
   useEffect(() => {
     fetchTrips();

@@ -5,27 +5,39 @@
 }
 
 :root {
-  /* Colors */
-  --color-primary: #2563eb;
-  --color-primary-dark: #1e40af;
-  --color-primary-light: #3b82f6;
-  --color-secondary: #10b981;
-  --color-danger: #ef4444;
-  --color-warning: #f59e0b;
-  --color-success: #10b981;
+  /* Spectrum School Blue - Primary Brand Colors */
+  --color-primary: #0052A5;        /* Spectrum Blue */
+  --color-primary-light: #1A6BC1;  /* Lighter blue for hover states */
+  --color-primary-dark: #003D7A;   /* Darker blue for depth */
+  --color-primary-50: #E6F0FA;     /* Very light blue background */
+  --color-primary-100: #CCE1F5;    /* Light blue tint */
 
-  /* Neutrals */
+  /* Complementary Accent Colors */
+  --color-accent: #00A3E0;         /* Bright cyan accent */
+  --color-accent-warm: #FF8C42;    /* Warm orange accent for contrast */
+
+  /* Secondary neutral blue-grays */
+  --color-secondary: #5A6C7D;      /* Blue-tinted gray */
+  --color-secondary-light: #8396A8;
+
+  /* Functional Colors - harmonized with blue */
+  --color-success: #00B67A;        /* Green with slight blue undertone */
+  --color-warning: #FFA726;        /* Warm orange for warnings */
+  --color-danger: #E63946;         /* Red for errors */
+  --color-info: #00A3E0;           /* Cyan for info (matches accent) */
+
+  /* Neutrals - cooler tones to complement blue */
   --color-white: #ffffff;
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
+  --color-gray-50: #F8FAFC;
+  --color-gray-100: #F1F5F9;
+  --color-gray-200: #E2E8F0;
+  --color-gray-300: #CBD5E1;
+  --color-gray-400: #94A3B8;
+  --color-gray-500: #64748B;
+  --color-gray-600: #475569;
+  --color-gray-700: #334155;
+  --color-gray-800: #1E293B;
+  --color-gray-900: #0F172A;
 
   /* Typography */
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',

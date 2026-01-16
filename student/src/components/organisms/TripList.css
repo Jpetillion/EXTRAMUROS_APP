@@ -1,8 +1,7 @@
 .trip-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
-  padding: 1rem;
 }
 
 .trip-list--loading,
@@ -11,20 +10,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem 1rem;
+  padding: 4rem 2rem;
   text-align: center;
-  color: #6b7280;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-gray-100);
   gap: 1rem;
 }
 
 .trip-list__empty-message {
-  font-size: 1.125rem;
-  color: #9ca3af;
+  font-size: 1.0625rem;
+  color: var(--color-gray-600);
 }
 
 @media (max-width: 768px) {
   .trip-list {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 1.25rem;
   }
 }

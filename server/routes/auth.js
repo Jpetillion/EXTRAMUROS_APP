@@ -53,27 +53,9 @@ router.post('/login', async (req, res) => {
     });
 
     if ((user.role === 'admin' || user.role === 'teacher') && user.mfa_enabled === 1) {
-      // Generate temporary token
+      // Generate temporary token (contains userId and expiry)
       const tempToken = generateTempToken(user.id);
       console.log('MFA is enabled, returning mfaRequired response');
-
-      // Store pending login (expires in 5 minutes)
-      pendingMfaLogins.set(tempToken, {
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        expiresAt: Date.now() + 5 * 60 * 1000
-      });
-
-      // Clean up expired logins
-      setTimeout(() => {
-        const pending = pendingMfaLogins.get(tempToken);
-        if (pending && Date.now() > pending.expiresAt) {
-          pendingMfaLogins.delete(tempToken);
-        }
-      }, 5 * 60 * 1000);
 
       return res.json({
         mfaRequired: true,
@@ -130,22 +112,10 @@ router.post('/login/mfa', async (req, res) => {
       return res.status(401).json({ error: 'Invalid or expired temporary token' });
     }
 
-    const pending = pendingMfaLogins.get(tempToken);
-
-    if (!pending) {
-      return res.status(401).json({ error: 'Session expired. Please login again.' });
-    }
-
-    if (Date.now() > pending.expiresAt) {
-      pendingMfaLogins.delete(tempToken);
-      return res.status(401).json({ error: 'Session expired. Please login again.' });
-    }
-
     // Get user to verify MFA
     const user = await getUserById(userId);
 
     if (!user || !user.mfa_enabled) {
-      pendingMfaLogins.delete(tempToken);
       return res.status(400).json({ error: 'MFA not enabled' });
     }
 
@@ -189,9 +159,6 @@ router.post('/login/mfa', async (req, res) => {
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
-
-    // Clean up pending login
-    pendingMfaLogins.delete(tempToken);
 
     res.json({
       user: {

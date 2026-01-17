@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://extramuros-app-server.vercel.app/api/$1" }
+  ]
+}

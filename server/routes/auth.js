@@ -1,5 +1,9 @@
 import express from 'express';
+console.log('[AUTH ROUTE] Starting auth.js import');
+
 import bcrypt from 'bcryptjs';
+console.log('[AUTH ROUTE] Imported bcryptjs successfully');
+
 import { getUserByEmail, getUserById } from '../models/db.js';
 import { generateToken } from '../utils/jwt.js';
 import { validateEmail, validatePassword } from '../utils/validators.js';
@@ -8,14 +12,17 @@ import { generateTempToken, verifyTempToken, verifyMfaToken, verifyBackupCode } 
 import { updateUser } from '../models/db.js';
 
 const router = express.Router();
+console.log('[AUTH ROUTE] Router created');
 
 // Temporary storage for MFA pending logins (in production, use Redis)
 const pendingMfaLogins = new Map();
 
 // Login (Step 1: Email + Password)
 router.post('/login', async (req, res) => {
+  console.log('[AUTH ROUTE /login] Login route hit!');
   try {
     const { email, password } = req.body;
+    console.log('[AUTH ROUTE /login] Email:', email);
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -237,4 +244,5 @@ router.get('/me', authMiddleware, async (req, res) => {
   }
 });
 
+console.log('[AUTH ROUTE] Exporting router');
 export default router;

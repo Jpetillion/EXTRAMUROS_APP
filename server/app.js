@@ -3,18 +3,40 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
+console.log('[APP] Starting app.js initialization');
+
 import { transformResponseMiddleware } from './utils/transform.js';
+console.log('[APP] Imported transformResponseMiddleware');
+
 import authRoutes from './routes/auth.js';
+console.log('[APP] Imported authRoutes:', authRoutes ? 'SUCCESS' : 'FAILED');
+
 import mfaRoutes from './routes/mfa.js';
+console.log('[APP] Imported mfaRoutes:', mfaRoutes ? 'SUCCESS' : 'FAILED');
+
 import tripRoutes from './routes/trips.js';
+console.log('[APP] Imported tripRoutes:', tripRoutes ? 'SUCCESS' : 'FAILED');
+
 import classesRoutes from './routes/classes.js';
+console.log('[APP] Imported classesRoutes:', classesRoutes ? 'SUCCESS' : 'FAILED');
+
 import usersRoutes from './routes/users.js';
+console.log('[APP] Imported usersRoutes:', usersRoutes ? 'SUCCESS' : 'FAILED');
+
 import manifestRoutes from './routes/manifest.js';
+console.log('[APP] Imported manifestRoutes:', manifestRoutes ? 'SUCCESS' : 'FAILED');
+
 import uploadRoutes from './routes/upload.js';
+console.log('[APP] Imported uploadRoutes:', uploadRoutes ? 'SUCCESS' : 'FAILED');
+
 import statsRoutes from './routes/stats.js';
+console.log('[APP] Imported statsRoutes:', statsRoutes ? 'SUCCESS' : 'FAILED');
+
 import syncRoutes from './routes/sync.js';
+console.log('[APP] Imported syncRoutes:', syncRoutes ? 'SUCCESS' : 'FAILED');
 
 const app = express();
+console.log('[APP] Express app created');
 
 // ---- CORS (FIRST) ----
 const allowedOrigins = (process.env.CORS_ORIGINS || '')
@@ -52,15 +74,26 @@ app.get('/api/health', (req, res) => {
 });
 
 // Routes
+console.log('[APP] Registering routes...');
 app.use('/api/auth', authRoutes);
+console.log('[APP] Registered /api/auth');
 app.use('/api/mfa', mfaRoutes);
+console.log('[APP] Registered /api/mfa');
 app.use('/api/trips', tripRoutes);
+console.log('[APP] Registered /api/trips');
 app.use('/api/classes', classesRoutes);
+console.log('[APP] Registered /api/classes');
 app.use('/api/users', usersRoutes);
+console.log('[APP] Registered /api/users');
 app.use('/api/manifest', manifestRoutes);
+console.log('[APP] Registered /api/manifest');
 app.use('/api/upload', uploadRoutes);
+console.log('[APP] Registered /api/upload');
 app.use('/api/stats', statsRoutes);
+console.log('[APP] Registered /api/stats');
 app.use('/api/sync', syncRoutes);
+console.log('[APP] Registered /api/sync');
+console.log('[APP] All routes registered successfully');
 
 // Error handling
 app.use((err, req, res, next) => {

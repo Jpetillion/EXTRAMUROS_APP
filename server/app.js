@@ -44,7 +44,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use(transformResponseMiddleware);
+// app.use(transformResponseMiddleware);
 
 // Health
 app.get('/api/health', (req, res) => {

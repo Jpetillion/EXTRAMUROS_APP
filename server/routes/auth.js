@@ -1,5 +1,5 @@
 import express from 'express';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { getUserByEmail, getUserById } from '../models/db.js';
 import { generateToken } from '../utils/jwt.js';
 import { validateEmail, validatePassword } from '../utils/validators.js';

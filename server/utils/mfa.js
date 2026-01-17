@@ -1,5 +1,5 @@
 import speakeasy from 'speakeasy';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 /**
  * Generate a new MFA secret for a user

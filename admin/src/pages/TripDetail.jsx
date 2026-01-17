@@ -44,6 +44,9 @@ const TripDetail = () => {
   // Confirm modal for class removal
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, classId: null, className: '' });
 
+  // Confirm modal for teacher removal
+  const [confirmTeacherModal, setConfirmTeacherModal] = useState({ isOpen: false, userId: null, teacherName: '' });
+
   useEffect(() => {
     fetchTripData();
   }, [id]);
@@ -385,17 +388,27 @@ const TripDetail = () => {
     }
   };
 
-  const handleRemoveTeacher = async (userId) => {
-    if (!window.confirm('Are you sure you want to remove this teacher from the trip?')) {
-      return;
-    }
+  const handleRemoveTeacherClick = (teacher) => {
+    const userId = teacher.user_id || teacher.userId;
+    const teacherName = `${teacher.first_name || teacher.firstName} ${teacher.last_name || teacher.lastName}`;
+    setConfirmTeacherModal({
+      isOpen: true,
+      userId: userId,
+      teacherName: teacherName
+    });
+  };
+
+  const handleRemoveTeacher = async () => {
+    const userId = confirmTeacherModal.userId;
 
     try {
       await tripsAPI.removeTeacher(id, userId);
+      setConfirmTeacherModal({ isOpen: false, userId: null, teacherName: '' });
       success('Teacher removed successfully');
       fetchTripData();
     } catch (err) {
       console.error('Failed to remove teacher:', err);
+      setConfirmTeacherModal({ isOpen: false, userId: null, teacherName: '' });
       showError(err.response?.data?.error || err.message || 'Failed to remove teacher');
     }
   };
@@ -551,7 +564,7 @@ const TripDetail = () => {
                 <Button
                   size="small"
                   variant="ghost"
-                  onClick={() => handleRemoveTeacher(teacher.user_id || teacher.userId)}
+                  onClick={() => handleRemoveTeacherClick(teacher)}
                 >
                   Remove
                 </Button>
@@ -843,6 +856,17 @@ const TripDetail = () => {
         onConfirm={handleRemoveClass}
         title="Remove Class"
         message={`Are you sure you want to remove ${confirmModal.className ? `"${confirmModal.className}"` : 'this class'} from the trip?`}
+        confirmText="Remove"
+        variant="danger"
+      />
+
+      {/* Confirm Modal for Teacher Removal */}
+      <ConfirmModal
+        isOpen={confirmTeacherModal.isOpen}
+        onClose={() => setConfirmTeacherModal({ isOpen: false, userId: null, teacherName: '' })}
+        onConfirm={handleRemoveTeacher}
+        title="Remove Teacher"
+        message={`Are you sure you want to remove ${confirmTeacherModal.teacherName ? `"${confirmTeacherModal.teacherName}"` : 'this teacher'} from the trip?`}
         confirmText="Remove"
         variant="danger"
       />

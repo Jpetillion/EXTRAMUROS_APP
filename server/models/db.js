@@ -22,7 +22,7 @@ export const getUserByEmail = async (email) => {
 
 export const getUserById = async (id) => {
   const result = await db.execute({
-    sql: 'SELECT id, email, role, first_name, last_name, created_at FROM users WHERE id = ?',
+    sql: 'SELECT * FROM users WHERE id = ?',
     args: [id]
   });
   return result.rows[0] || null;
@@ -36,6 +36,26 @@ export const getAllUsers = async (role = null) => {
     ? await db.execute({ sql, args: [role] })
     : await db.execute(sql);
   return result.rows;
+};
+
+export const updateUser = async (id, updates) => {
+  const fields = [];
+  const args = [];
+
+  for (const [key, value] of Object.entries(updates)) {
+    // Convert camelCase to snake_case for database columns
+    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    fields.push(`${snakeKey} = ?`);
+    args.push(value);
+  }
+
+  if (fields.length === 0) return;
+
+  args.push(id);
+  await db.execute({
+    sql: `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
+    args
+  });
 };
 
 export const deleteUser = async (id) => {

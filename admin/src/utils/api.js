@@ -80,8 +80,17 @@ api.interceptors.response.use(
 // API endpoints
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
+  loginMfa: (data) => api.post('/auth/login/mfa', data),
   logout: () => api.post('/auth/logout'),
   getProfile: () => api.get('/auth/profile'),
+};
+
+export const mfaAPI = {
+  generateSetup: () => api.post('/mfa/setup/generate'),
+  verifySetup: (token) => api.post('/mfa/setup/verify', { token }),
+  disable: (password) => api.post('/mfa/disable', { password }),
+  getStatus: () => api.get('/mfa/status'),
+  regenerateBackupCodes: (token) => api.post('/mfa/backup-codes/regenerate', { token }),
 };
 
 export const tripsAPI = {

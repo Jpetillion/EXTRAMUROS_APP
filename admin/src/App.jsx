@@ -7,6 +7,7 @@ import TripDetail from './pages/TripDetail';
 import Classes from './pages/Classes';
 import ClassDetail from './pages/ClassDetail';
 import Users from './pages/Users';
+import Settings from './pages/Settings';
 import Header from './components/organisms/Header';
 import Sidebar from './components/organisms/Sidebar';
 import styles from './App.module.css';
@@ -89,6 +90,14 @@ const App = () => {
               element={
                 <PrivateRoute>
                   <Users />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <PrivateRoute>
+                  <Settings />
                 </PrivateRoute>
               }
             />

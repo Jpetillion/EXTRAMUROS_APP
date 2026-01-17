@@ -1,0 +1,42 @@
+.otpContainer {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.otpInput {
+  width: 3rem;
+  height: 3.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-gray-900);
+  transition: all var(--transition-base);
+}
+
+.otpInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 82, 165, 0.1);
+}
+
+.otpInput:disabled {
+  background: var(--color-gray-50);
+  color: var(--color-gray-400);
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .otpInput {
+    width: 2.5rem;
+    height: 3rem;
+    font-size: 1.25rem;
+  }
+
+  .otpContainer {
+    gap: 0.5rem;
+  }
+}

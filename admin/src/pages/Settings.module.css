@@ -1,0 +1,347 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem;
+  text-align: center;
+  color: var(--color-gray-600);
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background-color: var(--color-danger-50);
+  border: 1px solid var(--color-danger-200);
+  border-radius: var(--radius-md);
+  color: var(--color-danger-700);
+  margin-bottom: 1.5rem;
+}
+
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.section h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Profile Section */
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.infoRow .label {
+  font-weight: 600;
+  color: var(--color-gray-700);
+  min-width: 80px;
+}
+
+.infoRow .value {
+  color: var(--color-gray-900);
+}
+
+/* MFA Status */
+.mfaStatus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.mfaInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  flex: 1;
+}
+
+.mfaIconWrapper {
+  flex-shrink: 0;
+}
+
+.mfaIconEnabled {
+  color: var(--color-success);
+}
+
+.mfaIconDisabled {
+  color: var(--color-gray-400);
+}
+
+.mfaInfo h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+}
+
+.mfaDescription {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+  line-height: 1.5;
+}
+
+.backupCodesInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0 0;
+  font-size: 0.875rem;
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.mfaActions {
+  flex-shrink: 0;
+}
+
+/* Setup Wizard */
+.setupWizard {
+  padding: 1rem;
+}
+
+.setupStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.setupHeader {
+  text-align: center;
+  max-width: 500px;
+}
+
+.setupHeader h3 {
+  margin: 1rem 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+}
+
+.setupHeader p {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-gray-600);
+  line-height: 1.5;
+}
+
+.qrCodeContainer {
+  padding: 2rem;
+  background: white;
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.secretKey {
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.secretKey .label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+  font-weight: 500;
+}
+
+.secretKey .code {
+  display: block;
+  padding: 0.75rem 1rem;
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  color: var(--color-gray-900);
+  word-break: break-all;
+}
+
+.verifyForm {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.otpWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.setupActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  padding-top: 1rem;
+}
+
+/* Backup Codes */
+.backupCodesContainer {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.backupCodesWarning {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--color-warning-50);
+  border: 1px solid var(--color-warning-200);
+  border-radius: var(--radius-md);
+}
+
+.backupCodesWarning p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-warning-800);
+  line-height: 1.5;
+}
+
+.backupCodesList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.backupCode {
+  display: block;
+  padding: 0.75rem;
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  text-align: center;
+}
+
+.backupCodesActions {
+  display: flex;
+  justify-content: center;
+}
+
+/* Disable Form */
+.disableForm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.disableForm form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--color-gray-700);
+  font-size: 0.875rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: all var(--transition-base);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 82, 165, 0.1);
+}
+
+.input:disabled {
+  background: var(--color-gray-50);
+  color: var(--color-gray-400);
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 1rem;
+  }
+
+  .mfaStatus {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mfaActions {
+    width: 100%;
+  }
+
+  .backupCodesList {
+    grid-template-columns: 1fr;
+  }
+
+  .setupActions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .setupActions button {
+    width: 100%;
+  }
+}

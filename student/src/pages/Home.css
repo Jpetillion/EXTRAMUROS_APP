@@ -136,11 +136,113 @@
   font-weight: 500;
 }
 
+/* Selected Class Badge */
+.home__selected-class {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
 /* Actions */
 .home__actions {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+/* Class Selection */
+.home__class-selection {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.home__class-selection-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.home__class-selection-header h2 {
+  margin: 1rem 0 0.5rem 0;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
+}
+
+.home__class-selection-header p {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-gray-600);
+}
+
+.home__loading,
+.home__error,
+.home__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--color-gray-600);
+}
+
+.home__class-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.home__class-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: white;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.home__class-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(0, 82, 165, 0.12);
+  transform: translateY(-2px);
+}
+
+.home__class-card:active {
+  transform: translateY(0);
+}
+
+.home__class-card-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-50);
+  border-radius: 0.75rem;
+}
+
+.home__class-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.home__class-card-content h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+}
+
+.home__class-card-year {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
 }
 
 /* Mobile Responsive */

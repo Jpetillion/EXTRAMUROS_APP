@@ -34,13 +34,8 @@ export function BrowseTrips() {
       setLoading(true);
       setError('');
 
+      // Fetch trips for selected class
       const response = await fetch(`${API_URL}/api/classes/${selectedClass.id}/trips?published=true`);
-
-      if (response.status === 404) {
-        setError('Your class was not found. Please log out and log in again to select your class.');
-        setAvailableTrips([]);
-        return;
-      }
 
       if (!response.ok) {
         throw new Error('Failed to load trips');
@@ -162,8 +157,8 @@ export function BrowseTrips() {
         events: eventsWithMedia,
         teachers: teachers,
         downloadedAt: Date.now(),
-        studentEmail: userEmail,
-        classId: selectedClass.id
+        studentEmail: userEmail || 'anonymous',
+        classId: selectedClass?.id || null
       };
 
       console.log('=== TRIP DOWNLOAD SUMMARY ===');
@@ -242,8 +237,8 @@ export function BrowseTrips() {
         {!error && availableTrips.length === 0 && (
           <div className="browse-trips__empty">
             <Icon name="map" size="xlarge" color="var(--color-gray-400)" />
-            <h3>No Trips Available</h3>
-            <p>There are no published trips assigned to your class yet.</p>
+            <h3>Geen Uitstappen Beschikbaar</h3>
+            <p>Er zijn nog geen gepubliceerde uitstappen voor je klas.</p>
           </div>
         )}
 

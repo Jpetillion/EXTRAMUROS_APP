@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { transformResponseMiddleware } from './utils/transform.js';
 import authRoutes from './routes/auth.js';
+import mfaRoutes from './routes/mfa.js';
 import tripRoutes from './routes/trips.js';
 import classesRoutes from './routes/classes.js';
 import usersRoutes from './routes/users.js';
@@ -37,6 +38,7 @@ app.get('/api/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/mfa', mfaRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/api/classes', classesRoutes);
 app.use('/api/users', usersRoutes);

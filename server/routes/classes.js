@@ -1,4 +1,6 @@
 import express from 'express';
+console.log('[CLASSES ROUTE] Starting classes.js import');
+
 import {
   createClass,
   getAllClasses,
@@ -11,6 +13,7 @@ import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validateRequired } from '../utils/validators.js';
 
 const router = express.Router();
+console.log('[CLASSES ROUTE] Router created');
 
 // Get all classes (public - needed for student login)
 router.get('/', async (req, res) => {
@@ -104,8 +107,10 @@ router.delete('/:id', authMiddleware, requireRole('teacher', 'admin'), async (re
 
 // Get trips assigned to a class
 router.get('/:id/trips', async (req, res) => {
+  console.log('[CLASSES ROUTE /:id/trips] Route hit! Class ID:', req.params.id, 'Published:', req.query.published);
   try {
     const classData = await getClassById(req.params.id);
+    console.log('[CLASSES ROUTE /:id/trips] Class data:', classData ? 'found' : 'not found');
 
     if (!classData) {
       return res.status(404).json({ error: 'Class not found' });
@@ -121,4 +126,5 @@ router.get('/:id/trips', async (req, res) => {
   }
 });
 
+console.log('[CLASSES ROUTE] Exporting router');
 export default router;

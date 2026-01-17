@@ -47,20 +47,20 @@ app.use(cookieParser());
 app.use(transformResponseMiddleware);
 
 // Health
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Routes
-app.use('/auth', authRoutes);
-app.use('/mfa', mfaRoutes);
-app.use('/trips', tripRoutes);
-app.use('/classes', classesRoutes);
-app.use('/users', usersRoutes);
-app.use('/manifest', manifestRoutes);
-app.use('/upload', uploadRoutes);
-app.use('/stats', statsRoutes);
-app.use('/sync', syncRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/mfa', mfaRoutes);
+app.use('/api/trips', tripRoutes);
+app.use('/api/classes', classesRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/manifest', manifestRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/sync', syncRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {

@@ -10,7 +10,7 @@
   <div id="media"></div>
 
   <script>
-    const API_URL = 'http://localhost:3000';
+    const API_URL = '/api';
     const TRIP_ID = '476dc115-12ee-4a00-8f66-fdb13f35abce';
     const EVENT_ID = '9cf5acd8-e82d-4636-88e7-366484db65fe';
 
@@ -40,7 +40,7 @@
 
         // Test image download
         log('Fetching image...');
-        const imgResponse = await fetch(`${API_URL}/api/trips/${TRIP_ID}/events/${EVENT_ID}/image`);
+        const imgResponse = await fetch(`${API_URL}/trips/${TRIP_ID}/events/${EVENT_ID}/image`);
         log(`Image response status: ${imgResponse.status}`);
         log(`Image response ok: ${imgResponse.ok}`);
         log(`Image Content-Type: ${imgResponse.headers.get('Content-Type')}`);
@@ -65,7 +65,7 @@
 
         // Test audio download
         log('\nFetching audio...');
-        const audioResponse = await fetch(`${API_URL}/api/trips/${TRIP_ID}/events/${EVENT_ID}/audio`);
+        const audioResponse = await fetch(`${API_URL}/trips/${TRIP_ID}/events/${EVENT_ID}/audio`);
         log(`Audio response status: ${audioResponse.status}`);
         log(`Audio response ok: ${audioResponse.ok}`);
         log(`Audio Content-Type: ${audioResponse.headers.get('Content-Type')}`);

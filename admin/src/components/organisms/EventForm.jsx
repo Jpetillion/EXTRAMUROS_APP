@@ -4,6 +4,8 @@ import FormField from '../molecules/FormField';
 import { MapPicker } from '../molecules/MapPicker';
 import styles from './EventForm.module.css';
 
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
+
 // Helper function to convert YouTube URL to embed URL
 const getYouTubeEmbedUrl = (url) => {
   if (!url) return null;
@@ -101,10 +103,10 @@ const EventForm = ({ event, onSave, onCancel, isLoading }) => {
       // Check multiple possible properties for image/audio existence
       const tripId = event.tripId || event.trip_id;
       if (tripId && (event.hasImage || event.imageBlob || event.image_blob)) {
-        setImagePreview(`http://localhost:3000/api/trips/${tripId}/events/${event.id}/image`);
+        setImagePreview(`${API_BASE}/trips/${tripId}/events/${event.id}/image`);
       }
       if (tripId && (event.hasAudio || event.audioBlob || event.audio_blob)) {
-        setAudioPreview(`http://localhost:3000/api/trips/${tripId}/events/${event.id}/audio`);
+        setAudioPreview(`${API_BASE}/trips/${tripId}/events/${event.id}/audio`);
       }
     }
   }, [event]);

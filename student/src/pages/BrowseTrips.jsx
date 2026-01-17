@@ -10,7 +10,7 @@ import { useToast } from '../hooks/useToast.js';
 import { saveTrip } from '../utils/storage.js';
 import './BrowseTrips.css';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export function BrowseTrips() {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ export function BrowseTrips() {
       setError('');
 
       // Fetch trips for selected class
-      const response = await fetch(`${API_URL}/api/classes/${selectedClass.id}/trips?published=true`);
+      const response = await fetch(`${API_URL}/classes/${selectedClass.id}/trips?published=true`);
 
       if (!response.ok) {
         throw new Error('Failed to load trips');
@@ -56,19 +56,19 @@ export function BrowseTrips() {
       setDownloading(prev => ({ ...prev, [trip.id]: true }));
 
       // Fetch full trip details with events
-      const response = await fetch(`${API_URL}/api/trips/${trip.id}`);
+      const response = await fetch(`${API_URL}/trips/${trip.id}`);
       if (!response.ok) throw new Error('Failed to fetch trip details');
 
       const tripData = await response.json();
 
       // Fetch events for the trip
-      const eventsResponse = await fetch(`${API_URL}/api/trips/${trip.id}/events`);
+      const eventsResponse = await fetch(`${API_URL}/trips/${trip.id}/events`);
       if (!eventsResponse.ok) throw new Error('Failed to fetch trip events');
 
       const events = await eventsResponse.json();
 
       // Fetch teachers for the trip (public endpoint)
-      const teachersResponse = await fetch(`${API_URL}/api/trips/${trip.id}/teachers/public`);
+      const teachersResponse = await fetch(`${API_URL}/trips/${trip.id}/teachers/public`);
       let teachers = [];
       if (teachersResponse.ok) {
         teachers = await teachersResponse.json();
@@ -82,7 +82,7 @@ export function BrowseTrips() {
           // Always try to download image (backend will return 404 if not present)
           try {
             console.log(`Fetching image for event ${event.id}...`);
-            const imgResponse = await fetch(`${API_URL}/api/trips/${trip.id}/events/${event.id}/image`);
+            const imgResponse = await fetch(`${API_URL}/trips/${trip.id}/events/${event.id}/image`);
             console.log(`Image response status: ${imgResponse.status}, ok: ${imgResponse.ok}`);
             console.log(`Image Content-Type: ${imgResponse.headers.get('Content-Type')}`);
             console.log(`Image Content-Length: ${imgResponse.headers.get('Content-Length')}`);
@@ -112,7 +112,7 @@ export function BrowseTrips() {
           // Always try to download audio (backend will return 404 if not present)
           try {
             console.log(`Fetching audio for event ${event.id}...`);
-            const audioResponse = await fetch(`${API_URL}/api/trips/${trip.id}/events/${event.id}/audio`);
+            const audioResponse = await fetch(`${API_URL}/trips/${trip.id}/events/${event.id}/audio`);
             console.log(`Audio response status: ${audioResponse.status}, ok: ${audioResponse.ok}`);
             const contentLength = audioResponse.headers.get('Content-Length');
             console.log(`Audio Content-Length: ${contentLength}`);
@@ -122,7 +122,7 @@ export function BrowseTrips() {
               if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
                 console.warn(`Audio file is too large (${Math.round(contentLength / 1024 / 1024)}MB), storing URL instead for event ${event.id}`);
                 // Store the server URL instead of downloading the file
-                eventWithMedia.audioUrl = `${API_URL}/api/trips/${trip.id}/events/${event.id}/audio`;
+                eventWithMedia.audioUrl = `${API_URL}/trips/${trip.id}/events/${event.id}/audio`;
                 eventWithMedia.audioMimeType = audioResponse.headers.get('Content-Type') || 'audio/mpeg';
                 console.log(`✓ Stored audio URL for event ${event.id} (will stream from server)`);
               } else {

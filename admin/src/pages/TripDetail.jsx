@@ -89,7 +89,7 @@ const TripDetail = () => {
   const fetchProgressReport = async () => {
     try {
       setLoadingProgress(true);
-      const response = await fetch(`/api/stats/trips/${id}/progress`, {
+      const response = await fetch(`/stats/trips/${id}/progress`, {
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Failed to fetch progress report');
@@ -120,8 +120,8 @@ const TripDetail = () => {
       setSubmittingEvent(true);
 
       const url = editingEvent
-        ? `/api/trips/${id}/events/${editingEvent.id}`
-        : `/api/trips/${id}/events`;
+        ? `/trips/${id}/events/${editingEvent.id}`
+        : `/trips/${id}/events`;
 
       const method = editingEvent ? 'PUT' : 'POST';
 
@@ -166,7 +166,7 @@ const TripDetail = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`/api/trips/${id}/events/${eventId}`, {
+      const response = await fetch(`/trips/${id}/events/${eventId}`, {
         method: 'DELETE',
         headers
       });
@@ -190,13 +190,13 @@ const TripDetail = () => {
     try {
       // Swap order indexes
       await Promise.all([
-        fetch(`/api/trips/${id}/events/${eventId}`, {
+        fetch(`/trips/${id}/events/${eventId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ orderIndex: currentIndex - 1 }),
           credentials: 'include'
         }),
-        fetch(`/api/trips/${id}/events/${targetEvent.id}`, {
+        fetch(`/trips/${id}/events/${targetEvent.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ orderIndex: currentIndex }),
@@ -220,13 +220,13 @@ const TripDetail = () => {
     try {
       // Swap order indexes
       await Promise.all([
-        fetch(`/api/trips/${id}/events/${eventId}`, {
+        fetch(`/trips/${id}/events/${eventId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ orderIndex: currentIndex + 1 }),
           credentials: 'include'
         }),
-        fetch(`/api/trips/${id}/events/${targetEvent.id}`, {
+        fetch(`/trips/${id}/events/${targetEvent.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ orderIndex: currentIndex }),
@@ -272,7 +272,7 @@ const TripDetail = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`/api/trips/${id}/classes/${classId}`, {
+      const response = await fetch(`/trips/${id}/classes/${classId}`, {
         method: 'POST',
         headers
       });
@@ -313,7 +313,7 @@ const TripDetail = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`/api/trips/${id}/classes/${classId}`, {
+      const response = await fetch(`/trips/${id}/classes/${classId}`, {
         method: 'DELETE',
         headers
       });

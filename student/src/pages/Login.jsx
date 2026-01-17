@@ -5,7 +5,7 @@ import { Button } from '../components/atoms/Button.jsx';
 import { Icon } from '../components/atoms/Icon.jsx';
 import './Login.css';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export function Login() {
   const [step, setStep] = useState(1); // 1 = email, 2 = class selection
@@ -39,7 +39,7 @@ export function Login() {
     setLoading(true);
     try {
       // Fetch available classes
-      const response = await fetch(`${API_URL}/api/classes`);
+      const response = await fetch(`${API_URL}/classes`);
 
       if (!response.ok) {
         throw new Error('Failed to load classes');

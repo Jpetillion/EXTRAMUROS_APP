@@ -8,7 +8,7 @@ import { useTripContext } from '../context/TripContext.jsx';
 import { useOfflineContext } from '../context/OfflineContext.jsx';
 import './Home.css';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export function Home() {
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ export function Home() {
   const fetchClasses = async () => {
     try {
       setLoadingClasses(true);
-      const response = await fetch(`${API_URL}/api/classes`);
+      const response = await fetch(`${API_URL}/classes`);
 
       if (!response.ok) {
         throw new Error('Failed to load classes');

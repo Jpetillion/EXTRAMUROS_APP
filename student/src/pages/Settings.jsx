@@ -26,10 +26,43 @@ export function Settings() {
   const { success, error: showError, info } = useToast();
   const { confirm, confirmState, handleClose } = useConfirm();
   const [isClearing, setIsClearing] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
     refreshStorage();
   }, [downloadedTrips]);
+
+  // Capture the beforeinstallprompt event
+  useEffect(() => {
+    // Check if app is already installed
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      setIsInstalled(true);
+    }
+
+    const handleBeforeInstallPrompt = (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      setDeferredPrompt(e);
+      setIsInstalled(false);
+    };
+
+    const handleAppInstalled = () => {
+      // Clear the deferredPrompt
+      setDeferredPrompt(null);
+      setIsInstalled(true);
+      success('App installed successfully!');
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, [success]);
 
   const handleSync = async () => {
     if (!isOnline) {
@@ -68,12 +101,37 @@ export function Settings() {
     }
   };
 
-  const handleInstallApp = () => {
-    if ('BeforeInstallPromptEvent' in window) {
-      info('To install this app, use the "Add to Home Screen" option in your browser menu.');
-    } else {
-      info('App installation is managed by your browser. Look for "Install" or "Add to Home Screen" in the menu.');
+  const handleInstallApp = async () => {
+    if (isInstalled) {
+      info('App is already installed!');
+      return;
     }
+
+    if (!deferredPrompt) {
+      // Provide platform-specific instructions
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (isIOS) {
+        info('To install on iOS: Tap the Share button and select "Add to Home Screen".');
+      } else {
+        info('To install this app, look for "Install" or "Add to Home Screen" in your browser menu.');
+      }
+      return;
+    }
+
+    // Show the install prompt
+    deferredPrompt.prompt();
+
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      success('Installing app...');
+    } else {
+      info('Installation cancelled.');
+    }
+
+    // Clear the deferredPrompt for next time
+    setDeferredPrompt(null);
   };
 
   const handleChangeClass = async () => {
@@ -246,10 +304,11 @@ export function Settings() {
                 variant="secondary"
                 fullWidth
                 onClick={handleInstallApp}
+                disabled={isInstalled}
               >
-                <Icon name="download" size="medium" />
+                <Icon name={isInstalled ? "check" : "download"} size="medium" />
                 {' '}
-                Install App
+                {isInstalled ? 'App Installed' : 'Install App'}
               </Button>
 
               <Button

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { mfaAPI } from '../utils/api';
+import { mfaAPI, authAPI } from '../utils/api';
+import { useToast } from '../hooks/useToast';
 import Button from '../components/atoms/Button';
 import Badge from '../components/atoms/Badge';
 import Spinner from '../components/atoms/Spinner';
 import OtpInput from '../components/molecules/OtpInput';
+import FormField from '../components/molecules/FormField';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   Warning, Shield, ShieldCheck, Key, QrCode,
@@ -13,10 +15,21 @@ import {
 import styles from './Settings.module.css';
 
 export default function Settings() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
+  const { success, error: showError } = useToast();
   const [mfaStatus, setMfaStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Profile edit states
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileData, setProfileData] = useState({ firstName: '', lastName: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  // Password change states
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [savingPassword, setSavingPassword] = useState(false);
 
   // Setup states
   const [showSetup, setShowSetup] = useState(false);
@@ -119,6 +132,71 @@ export default function Settings() {
     URL.revokeObjectURL(url);
   };
 
+  const handleEditProfile = () => {
+    setProfileData({ firstName: user.firstName, lastName: user.lastName });
+    setEditingProfile(true);
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    if (!profileData.firstName.trim() || !profileData.lastName.trim()) {
+      showError('First name and last name are required');
+      return;
+    }
+
+    try {
+      setSavingProfile(true);
+      await authAPI.updateProfile(profileData);
+      await refreshUser();
+      success('Profile updated successfully');
+      setEditingProfile(false);
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+      showError(err.data?.error || 'Failed to update profile');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleChangePassword = () => {
+    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setChangingPassword(true);
+  };
+
+  const handleSavePassword = async (e) => {
+    e.preventDefault();
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      showError('All fields are required');
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      showError('New passwords do not match');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      showError('New password must be at least 8 characters');
+      return;
+    }
+
+    try {
+      setSavingPassword(true);
+      await authAPI.updatePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      });
+      success('Password updated successfully');
+      setChangingPassword(false);
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      console.error('Failed to update password:', err);
+      showError(err.data?.error || 'Failed to update password');
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.container}>
@@ -163,7 +241,113 @@ export default function Settings() {
               </Badge>
             </div>
           </div>
+          {!editingProfile && (
+            <div style={{ marginTop: '1rem' }}>
+              <Button variant="secondary" onClick={handleEditProfile}>
+                Edit Profile
+              </Button>
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* Edit Profile Section */}
+      {editingProfile && (
+        <div className={styles.section}>
+          <h2>Edit Profile</h2>
+          <div className={styles.card}>
+            <form onSubmit={handleSaveProfile}>
+              <FormField
+                label="First Name"
+                name="firstName"
+                value={profileData.firstName}
+                onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
+                required
+              />
+              <FormField
+                label="Last Name"
+                name="lastName"
+                value={profileData.lastName}
+                onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
+                required
+              />
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <Button type="submit" variant="primary" loading={savingProfile}>
+                  Save Changes
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setEditingProfile(false)}
+                  disabled={savingProfile}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Change Password Section */}
+      <div className={styles.section}>
+        <h2>Change Password</h2>
+        {!changingPassword ? (
+          <div className={styles.card}>
+            <p style={{ marginBottom: '1rem', color: '#666' }}>
+              Update your password to keep your account secure
+            </p>
+            <Button variant="secondary" onClick={handleChangePassword}>
+              Change Password
+            </Button>
+          </div>
+        ) : (
+          <div className={styles.card}>
+            <form onSubmit={handleSavePassword}>
+              <FormField
+                label="Current Password"
+                name="currentPassword"
+                type="password"
+                value={passwordData.currentPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                required
+              />
+              <FormField
+                label="New Password"
+                name="newPassword"
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                required
+                placeholder="Min. 8 characters"
+              />
+              <FormField
+                label="Confirm New Password"
+                name="confirmPassword"
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                required
+              />
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <Button type="submit" variant="primary" loading={savingPassword}>
+                  Update Password
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    setChangingPassword(false);
+                    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                  }}
+                  disabled={savingPassword}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
 
       {/* MFA Security Section */}

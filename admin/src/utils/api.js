@@ -82,7 +82,9 @@ export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   loginMfa: (data) => api.post('/auth/login/mfa', data),
   logout: () => api.post('/auth/logout'),
-  getProfile: () => api.get('/auth/profile'),
+  getProfile: () => api.get('/auth/me'),
+  updateProfile: (data) => api.put('/auth/profile', data),
+  updatePassword: (data) => api.put('/auth/password', data),
 };
 
 export const mfaAPI = {

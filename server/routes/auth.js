@@ -211,5 +211,76 @@ router.get('/me', authMiddleware, async (req, res) => {
   }
 });
 
+// Update profile (name)
+router.put('/profile', authMiddleware, async (req, res) => {
+  try {
+    const { firstName, lastName } = req.body;
+
+    if (!firstName || !firstName.trim()) {
+      return res.status(400).json({ error: 'First name is required' });
+    }
+
+    if (!lastName || !lastName.trim()) {
+      return res.status(400).json({ error: 'Last name is required' });
+    }
+
+    await updateUser(req.user.id, {
+      firstName: firstName.trim(),
+      lastName: lastName.trim()
+    });
+
+    const updatedUser = await getUserById(req.user.id);
+
+    res.json({
+      id: updatedUser.id,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      firstName: updatedUser.first_name,
+      lastName: updatedUser.last_name,
+      mfaEnabled: Boolean(updatedUser.mfa_enabled)
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// Update password
+router.put('/password', authMiddleware, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current and new password are required' });
+    }
+
+    if (!validatePassword(newPassword)) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters' });
+    }
+
+    // Verify current password
+    const user = await getUserById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const validPassword = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+
+    // Hash and update new password
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    await updateUser(req.user.id, {
+      passwordHash: newPasswordHash
+    });
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Update password error:', error);
+    res.status(500).json({ error: 'Failed to update password' });
+  }
+});
+
 console.log('[AUTH ROUTE] Exporting router');
 export default router;

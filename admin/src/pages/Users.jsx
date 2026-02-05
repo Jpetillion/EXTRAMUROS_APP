@@ -343,15 +343,16 @@ const Users = () => {
           <FormField
             label="Role"
             name="role"
-            as="select"
+            type="select"
             value={formData.role}
             onChange={handleChange}
             error={errors.role}
             required
-          >
-            <option value="teacher">Teacher</option>
-            <option value="admin">Admin</option>
-          </FormField>
+            options={[
+              { value: 'teacher', label: 'Teacher' },
+              { value: 'admin', label: 'Admin' }
+            ]}
+          />
 
           <div className={styles.formActions}>
             <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>

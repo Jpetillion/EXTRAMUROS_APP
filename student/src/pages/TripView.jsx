@@ -12,22 +12,61 @@ import './TripView.css';
 
 // Helper function to convert YouTube URLs to embed format
 function getYouTubeEmbedUrl(url) {
-  if (!url) return null;
+  if (!url || typeof url !== 'string') return null;
+
+  // Remove whitespace
+  url = url.trim();
 
   // Already an embed URL
-  if (url.includes('youtube.com/embed/')) {
+  if (url.includes('youtube.com/embed/') || url.includes('youtube-nocookie.com/embed/')) {
     return url;
   }
 
-  // Convert watch URL to embed URL
-  // Supports: youtube.com/watch?v=ID, youtu.be/ID
-  const videoIdMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-  if (videoIdMatch && videoIdMatch[1]) {
-    return `https://www.youtube.com/embed/${videoIdMatch[1]}`;
+  // Extract video ID from various YouTube URL formats
+  let videoId = null;
+
+  // Pattern 1: youtube.com/watch?v=VIDEO_ID
+  // Handles: https://www.youtube.com/watch?v=dQw4w9WgXcQ&feature=share
+  const watchMatch = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+  if (watchMatch) {
+    videoId = watchMatch[1];
   }
 
-  // Return original if can't parse
-  return url;
+  // Pattern 2: youtu.be/VIDEO_ID
+  // Handles: https://youtu.be/dQw4w9WgXcQ
+  if (!videoId) {
+    const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (shortMatch) {
+      videoId = shortMatch[1];
+    }
+  }
+
+  // Pattern 3: youtube.com/shorts/VIDEO_ID
+  // Handles: https://www.youtube.com/shorts/dQw4w9WgXcQ
+  if (!videoId) {
+    const shortsMatch = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/);
+    if (shortsMatch) {
+      videoId = shortsMatch[1];
+    }
+  }
+
+  // Pattern 4: youtube.com/v/VIDEO_ID
+  // Handles: https://www.youtube.com/v/dQw4w9WgXcQ
+  if (!videoId) {
+    const vMatch = url.match(/youtube\.com\/v\/([a-zA-Z0-9_-]{11})/);
+    if (vMatch) {
+      videoId = vMatch[1];
+    }
+  }
+
+  // If we found a video ID, return the embed URL
+  if (videoId) {
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+
+  // If we can't parse a video ID, log warning and return null
+  console.warn('Could not parse YouTube video ID from URL:', url);
+  return null;
 }
 
 export function TripView() {
@@ -292,17 +331,26 @@ export function TripView() {
                         )}
                       </div>
                     )}
-                    {(event.videoUrl || event.video_url) && (
-                      <div className="trip-view__event-video">
-                        <iframe
-                          src={getYouTubeEmbedUrl(event.videoUrl || event.video_url)}
-                          title={event.title}
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        ></iframe>
-                      </div>
-                    )}
+                    {(event.videoUrl || event.video_url) && (() => {
+                      const embedUrl = getYouTubeEmbedUrl(event.videoUrl || event.video_url);
+                      return embedUrl ? (
+                        <div className="trip-view__event-video">
+                          <iframe
+                            src={embedUrl}
+                            title={event.title}
+                            style={{ border: 0 }}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          ></iframe>
+                        </div>
+                      ) : (
+                        <div className="trip-view__event-video-error">
+                          <Icon name="info" size="small" />
+                          {' '}
+                          Ongeldige YouTube video URL
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}

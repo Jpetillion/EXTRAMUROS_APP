@@ -495,8 +495,8 @@ router.delete('/:tripId/classes/:classId', authMiddleware, requireRole('teacher'
 
 // ============= TRIP TEACHER ROUTES =============
 
-// Get all teachers assigned to a trip (admins only)
-router.get('/:tripId/teachers', authMiddleware, requireRole('admin'), async (req, res) => {
+// Get all teachers assigned to a trip (teachers/admins only)
+router.get('/:tripId/teachers', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
   try {
     const teachers = await getTripTeachers(req.params.tripId);
     res.json(teachers);
@@ -517,8 +517,8 @@ router.get('/:tripId/teachers/public', async (req, res) => {
   }
 });
 
-// Assign a teacher to a trip (admins only)
-router.post('/:tripId/teachers/:userId', authMiddleware, requireRole('admin'), async (req, res) => {
+// Assign a teacher to a trip (teachers/admins only)
+router.post('/:tripId/teachers/:userId', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
   try {
     const { showPhone, showEmail, orderIndex } = req.body;
     const id = await assignTeacherToTrip(
@@ -539,8 +539,8 @@ router.post('/:tripId/teachers/:userId', authMiddleware, requireRole('admin'), a
   }
 });
 
-// Update teacher visibility settings (admins only)
-router.put('/:tripId/teachers/:userId', authMiddleware, requireRole('admin'), async (req, res) => {
+// Update teacher visibility settings (teachers/admins only)
+router.put('/:tripId/teachers/:userId', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
   try {
     const { showPhone, showEmail } = req.body;
     await updateTripTeacherVisibility(
@@ -556,8 +556,8 @@ router.put('/:tripId/teachers/:userId', authMiddleware, requireRole('admin'), as
   }
 });
 
-// Remove a teacher from a trip (admins only)
-router.delete('/:tripId/teachers/:userId', authMiddleware, requireRole('admin'), async (req, res) => {
+// Remove a teacher from a trip (teachers/admins only)
+router.delete('/:tripId/teachers/:userId', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
   try {
     await removeTeacherFromTrip(req.params.tripId, req.params.userId);
     res.json({ message: 'Teacher removed from trip successfully' });

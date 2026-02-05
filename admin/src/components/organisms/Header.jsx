@@ -10,6 +10,25 @@ const Header = () => {
     await logout();
   };
 
+  const getUserInitial = () => {
+    if (user?.role === 'teacher') return 'T';
+    if (user?.role === 'admin') return 'A';
+    return user?.firstName?.charAt(0).toUpperCase() || 'U';
+  };
+
+  const getUserName = () => {
+    if (user?.firstName && user?.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    return user?.email || 'User';
+  };
+
+  const getRoleDisplay = () => {
+    if (user?.role === 'teacher') return 'Teacher';
+    if (user?.role === 'admin') return 'Administrator';
+    return user?.role || 'User';
+  };
+
   return (
     <header className={styles.header}>
       <div className={styles.container}>
@@ -23,11 +42,11 @@ const Header = () => {
         <div className={styles.right}>
           <div className={styles.user}>
             <div className={styles.avatar}>
-              {user?.name?.charAt(0).toUpperCase() || 'A'}
+              {getUserInitial()}
             </div>
             <div className={styles.userInfo}>
-              <span className={styles.userName}>{user?.name || 'Admin'}</span>
-              <span className={styles.userRole}>{user?.role || 'Administrator'}</span>
+              <span className={styles.userName}>{getUserName()}</span>
+              <span className={styles.userRole}>{getRoleDisplay()}</span>
             </div>
           </div>
           <Button variant="outline" size="small" onClick={handleLogout}>

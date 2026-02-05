@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import { OfflineProvider } from './context/OfflineContext.jsx';
 import { TripProvider } from './context/TripContext.jsx';
 import { ToastProvider } from './context/ToastContext.jsx';
+import { usePWAInstall } from './hooks/usePWAInstall.js';
 // COMMENTED OUT: Login page disabled
 // import { Login } from './pages/Login.jsx';
 import { Home } from './pages/Home.jsx';
@@ -14,6 +15,9 @@ import { Settings } from './pages/Settings.jsx';
 import { ProtectedRoute } from './components/molecules/ProtectedRoute.jsx';
 
 function App() {
+  // Initialize PWA install hook at app level to capture event early
+  usePWAInstall();
+
   return (
     <BrowserRouter>
       <AuthProvider>

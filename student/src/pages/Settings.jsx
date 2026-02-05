@@ -12,6 +12,7 @@ import { useToast } from '../hooks/useToast.js';
 import { useConfirm } from '../hooks/useConfirm.js';
 import { useStorage } from '../hooks/useStorage.js';
 import { useSync } from '../hooks/useSync.js';
+import { usePWAInstall } from '../hooks/usePWAInstall.js';
 import { clearAllData, getStorageSize } from '../utils/storage.js';
 import { formatBytes, formatDateTime } from '../utils/helpers.js';
 import './Settings.css';
@@ -26,43 +27,11 @@ export function Settings() {
   const { success, error: showError, info } = useToast();
   const { confirm, confirmState, handleClose } = useConfirm();
   const [isClearing, setIsClearing] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const { isInstallable, isInstalled, installApp } = usePWAInstall();
 
   useEffect(() => {
     refreshStorage();
   }, [downloadedTrips]);
-
-  // Capture the beforeinstallprompt event
-  useEffect(() => {
-    // Check if app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-      setIsInstalled(true);
-    }
-
-    const handleBeforeInstallPrompt = (e) => {
-      // Prevent the mini-infobar from appearing on mobile
-      e.preventDefault();
-      // Stash the event so it can be triggered later
-      setDeferredPrompt(e);
-      setIsInstalled(false);
-    };
-
-    const handleAppInstalled = () => {
-      // Clear the deferredPrompt
-      setDeferredPrompt(null);
-      setIsInstalled(true);
-      success('App installed successfully!');
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
-  }, [success]);
 
   const handleSync = async () => {
     if (!isOnline) {
@@ -107,31 +76,24 @@ export function Settings() {
       return;
     }
 
-    if (!deferredPrompt) {
-      // Provide platform-specific instructions
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      if (isIOS) {
-        info('To install on iOS: Tap the Share button and select "Add to Home Screen".');
+    const result = await installApp();
+
+    if (!result.success) {
+      if (result.error === 'NO_PROMPT') {
+        // Provide platform-specific instructions
+        if (result.isIOS) {
+          info('To install on iOS: Tap the Share button and select "Add to Home Screen".');
+        } else {
+          info('To install this app, look for "Install" or "Add to Home Screen" in your browser menu.');
+        }
+      } else if (result.outcome === 'dismissed') {
+        info('Installation cancelled.');
       } else {
-        info('To install this app, look for "Install" or "Add to Home Screen" in your browser menu.');
+        showError('Failed to install app. Please try again.');
       }
-      return;
-    }
-
-    // Show the install prompt
-    deferredPrompt.prompt();
-
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-
-    if (outcome === 'accepted') {
-      success('Installing app...');
     } else {
-      info('Installation cancelled.');
+      success('App installed successfully!');
     }
-
-    // Clear the deferredPrompt for next time
-    setDeferredPrompt(null);
   };
 
   const handleChangeClass = async () => {
@@ -301,14 +263,14 @@ export function Settings() {
 
             <div className="settings__actions">
               <Button
-                variant="secondary"
+                variant={isInstallable ? "primary" : "secondary"}
                 fullWidth
                 onClick={handleInstallApp}
                 disabled={isInstalled}
               >
                 <Icon name={isInstalled ? "check" : "download"} size="medium" />
                 {' '}
-                {isInstalled ? 'App Installed' : 'Install App'}
+                {isInstalled ? 'App Installed' : (isInstallable ? 'Install App Now' : 'Install App')}
               </Button>
 
               <Button

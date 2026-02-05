@@ -152,7 +152,7 @@ export default function Settings() {
       setEditingProfile(false);
     } catch (err) {
       console.error('Failed to update profile:', err);
-      showError(err.data?.error || 'Failed to update profile');
+      showError(err.response?.data?.error || err.message || 'Failed to update profile');
     } finally {
       setSavingProfile(false);
     }
@@ -191,7 +191,7 @@ export default function Settings() {
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
       console.error('Failed to update password:', err);
-      showError(err.data?.error || 'Failed to update password');
+      showError(err.response?.data?.error || err.message || 'Failed to update password');
     } finally {
       setSavingPassword(false);
     }

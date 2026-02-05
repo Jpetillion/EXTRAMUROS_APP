@@ -173,7 +173,8 @@
 }
 
 /* Form Actions */
-.actions {
+.actions,
+.formActions {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;

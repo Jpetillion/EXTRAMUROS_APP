@@ -11,7 +11,8 @@
   color: var(--color-danger);
 }
 
-.actions {
+.actions,
+.formActions {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;

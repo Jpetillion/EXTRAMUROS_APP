@@ -216,11 +216,12 @@ export function BrowseTrips() {
       <div className="browse-trips__container">
         {selectedClass && (
           <div className="browse-trips__class-badge">
-            <Badge variant="primary">
-              <Icon name="users" size="small" />
-              {' '}
-              {selectedClass.name}
-            </Badge>
+            <div className="browse-trips__class-badge-inner">
+              <div className="browse-trips__class-badge-icon">
+                <Icon name="users" size="medium" color="white" />
+              </div>
+              <span className="browse-trips__class-badge-text">{selectedClass.name}</span>
+            </div>
           </div>
         )}
 

@@ -4,27 +4,20 @@ import { useOfflineContext } from '../../context/OfflineContext.jsx';
 import './OfflineBadge.css';
 
 export function OfflineBadge() {
-  const { isOnline, isSyncing } = useOfflineContext();
+  const { isOnline } = useOfflineContext();
 
-  if (isOnline && !isSyncing) {
+  // Only show badge when offline
+  if (isOnline) {
     return null;
   }
 
   return (
     <div className="offline-badge">
-      {isSyncing ? (
-        <Badge variant="info" size="small">
-          <Icon name="sync" size="small" />
-          {' '}
-          Syncing...
-        </Badge>
-      ) : (
-        <Badge variant="offline" size="small">
-          <Icon name="offline" size="small" />
-          {' '}
-          Offline
-        </Badge>
-      )}
+      <Badge variant="offline" size="small">
+        <Icon name="offline" size="small" />
+        {' '}
+        Offline
+      </Badge>
     </div>
   );
 }

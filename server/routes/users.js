@@ -6,6 +6,7 @@ import {
   getUserById,
   deleteUser,
   getAllTeachers,
+  updateUser,
   updateUserPhoneNumber
 } from '../models/db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
@@ -44,12 +45,12 @@ router.get('/:id', authMiddleware, requireRole('teacher', 'admin'), async (req, 
   }
 });
 
-// Create teacher account (admins only)
+// Create user account (admins only)
 router.post('/', authMiddleware, requireRole('admin'), async (req, res) => {
   try {
-    const { email, password, firstName, lastName } = req.body;
+    const { email, password, firstName, lastName, role } = req.body;
 
-    const errors = validateRequired(['email', 'password', 'firstName', 'lastName'], req.body);
+    const errors = validateRequired(['email', 'password', 'firstName', 'lastName', 'role'], req.body);
     if (errors) return res.status(400).json({ errors });
 
     if (!validateEmail(email)) {
@@ -60,11 +61,16 @@ router.post('/', authMiddleware, requireRole('admin'), async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 8 characters' });
     }
 
+    // Validate role
+    if (!['admin', 'teacher'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role. Must be admin or teacher' });
+    }
+
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create user with teacher role
-    const userId = await createUser(email, passwordHash, 'teacher', firstName, lastName);
+    // Create user with specified role
+    const userId = await createUser(email, passwordHash, role, firstName, lastName);
     const user = await getUserById(userId);
 
     res.status(201).json(user);
@@ -107,21 +113,38 @@ router.delete('/:id', authMiddleware, requireRole('admin'), async (req, res) => 
   }
 });
 
-// Update user (phone number for now)
+// Update user (admins only)
 router.put('/:id', authMiddleware, requireRole('admin'), async (req, res) => {
   try {
-    const { phoneNumber } = req.body;
+    const { phoneNumber, role, firstName, lastName } = req.body;
 
     const user = await getUserById(req.params.id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    if (phoneNumber !== undefined) {
-      await updateUserPhoneNumber(req.params.id, phoneNumber);
+    // Prevent changing your own role
+    if (role !== undefined && user.id === req.user.id) {
+      return res.status(403).json({ error: 'Cannot change your own role' });
     }
 
-    res.json({ message: 'User updated successfully' });
+    // Validate role if provided
+    if (role !== undefined && !['admin', 'teacher'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role. Must be admin or teacher' });
+    }
+
+    const updates = {};
+    if (phoneNumber !== undefined) updates.phoneNumber = phoneNumber;
+    if (role !== undefined) updates.role = role;
+    if (firstName !== undefined) updates.firstName = firstName;
+    if (lastName !== undefined) updates.lastName = lastName;
+
+    if (Object.keys(updates).length > 0) {
+      await updateUser(req.params.id, updates);
+    }
+
+    const updatedUser = await getUserById(req.params.id);
+    res.json(updatedUser);
   } catch (error) {
     console.error('Update user error:', error);
     res.status(500).json({ error: 'Failed to update user' });

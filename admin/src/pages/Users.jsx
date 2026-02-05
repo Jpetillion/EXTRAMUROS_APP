@@ -19,6 +19,7 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
 
   const { success, error: showError } = useToast();
   const { confirm, confirmState, handleClose } = useConfirm();
@@ -28,6 +29,7 @@ const Users = () => {
     password: '',
     firstName: '',
     lastName: '',
+    role: 'teacher',
   });
   const [errors, setErrors] = useState({});
 
@@ -40,7 +42,8 @@ const Users = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await usersAPI.getAll({ role: 'teacher' });
+      // Fetch all users (both teachers and admins)
+      const response = await usersAPI.getAll();
       setUsers(response.data);
     } catch (err) {
       console.error('Failed to fetch users:', err);
@@ -53,10 +56,28 @@ const Users = () => {
 
   const handleOpenModal = () => {
     if (!isAdmin) {
-      showError('Only admins can create teacher accounts');
+      showError('Only admins can create user accounts');
       return;
     }
-    setFormData({ email: '', password: '', firstName: '', lastName: '' });
+    setEditingUser(null);
+    setFormData({ email: '', password: '', firstName: '', lastName: '', role: 'teacher' });
+    setErrors({});
+    setIsModalOpen(true);
+  };
+
+  const handleEditUser = (user) => {
+    if (!isAdmin) {
+      showError('Only admins can edit user accounts');
+      return;
+    }
+    setEditingUser(user);
+    setFormData({
+      email: user.email,
+      password: '', // Don't pre-fill password
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+    });
     setErrors({});
     setIsModalOpen(true);
   };
@@ -64,14 +85,18 @@ const Users = () => {
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
-    }
+    if (!editingUser) {
+      // Only validate email for new users
+      if (!formData.email.trim()) {
+        newErrors.email = 'Email is required';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = 'Invalid email format';
+      }
 
-    if (!formData.password || formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+      // Password required for new users
+      if (!formData.password || formData.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters';
+      }
     }
 
     if (!formData.firstName.trim()) {
@@ -80,6 +105,10 @@ const Users = () => {
 
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
+    }
+
+    if (!formData.role) {
+      newErrors.role = 'Role is required';
     }
 
     setErrors(newErrors);
@@ -101,27 +130,39 @@ const Users = () => {
     try {
       setSubmitting(true);
 
-      await usersAPI.create(formData);
-      success('Teacher account created successfully');
+      if (editingUser) {
+        // Update existing user
+        await usersAPI.update(editingUser.id, {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          role: formData.role,
+        });
+        success('User updated successfully');
+      } else {
+        // Create new user
+        await usersAPI.create(formData);
+        success(`${formData.role === 'admin' ? 'Admin' : 'Teacher'} account created successfully`);
+      }
+
       setIsModalOpen(false);
       fetchUsers();
     } catch (err) {
-      console.error('Failed to create user:', err);
-      showError(err.response?.data?.error || err.message || 'Failed to create user');
+      console.error('Failed to save user:', err);
+      showError(err.response?.data?.error || err.message || 'Failed to save user');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDeleteUser = async (userId) => {
+  const handleDeleteUser = async (userId, userName, userRole) => {
     if (!isAdmin) {
-      showError('Only admins can delete teacher accounts');
+      showError('Only admins can delete user accounts');
       return;
     }
 
     const confirmed = await confirm({
-      title: 'Delete Teacher Account',
-      message: 'Are you sure you want to delete this teacher account? This action cannot be undone.',
+      title: `Delete ${userRole === 'admin' ? 'Admin' : 'Teacher'} Account`,
+      message: `Are you sure you want to delete ${userName}? This action cannot be undone.`,
       confirmText: 'Delete',
       variant: 'danger',
     });
@@ -130,7 +171,7 @@ const Users = () => {
 
     try {
       await usersAPI.delete(userId);
-      success('Teacher account deleted successfully');
+      success('User deleted successfully');
       fetchUsers();
     } catch (err) {
       console.error('Failed to delete user:', err);
@@ -152,14 +193,14 @@ const Users = () => {
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Users</h1>
-          <p className={styles.subtitle}>Manage teacher accounts</p>
+          <p className={styles.subtitle}>Manage admin and teacher accounts</p>
         </div>
-        {isAdmin && <Button onClick={handleOpenModal}>Add Teacher</Button>}
+        {isAdmin && <Button onClick={handleOpenModal}>Add User</Button>}
       </div>
 
       {!isAdmin && (
         <Card className={styles.infoCard}>
-          <p>You can view teachers but only admins can create or delete teacher accounts.</p>
+          <p>You can view users but only admins can create, edit, or delete user accounts.</p>
         </Card>
       )}
 
@@ -179,9 +220,9 @@ const Users = () => {
                 d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
               />
             </svg>
-            <h3>No teachers yet</h3>
-            <p>Get started by creating your first teacher account</p>
-            {isAdmin && <Button onClick={handleOpenModal}>Add Teacher</Button>}
+            <h3>No users yet</h3>
+            <p>Get started by creating your first user account</p>
+            {isAdmin && <Button onClick={handleOpenModal}>Add User</Button>}
           </div>
         </Card>
       ) : (
@@ -204,7 +245,9 @@ const Users = () => {
                   </td>
                   <td>{user.email}</td>
                   <td>
-                    <Badge variant="info">{user.role}</Badge>
+                    <Badge variant={user.role === 'admin' ? 'primary' : 'info'}>
+                      {user.role === 'admin' ? 'Admin' : 'Teacher'}
+                    </Badge>
                   </td>
                   <td className={styles.date}>
                     {formatDate(user.createdAt, 'short')}
@@ -214,7 +257,14 @@ const Users = () => {
                       <Button
                         size="small"
                         variant="ghost"
-                        onClick={() => handleDeleteUser(user.id)}
+                        onClick={() => handleEditUser(user)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="ghost"
+                        onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`, user.role)}
                       >
                         Delete
                       </Button>
@@ -230,31 +280,45 @@ const Users = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Create Teacher Account"
+        title={editingUser ? 'Edit User' : 'Create User Account'}
         size="small"
       >
         <form onSubmit={handleSubmit} className={styles.form}>
-          <FormField
-            label="Email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            error={errors.email}
-            required
-            placeholder="teacher@school.be"
-          />
+          {!editingUser && (
+            <FormField
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+              required
+              placeholder="user@school.be"
+            />
+          )}
 
-          <FormField
-            label="Password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            error={errors.password}
-            required
-            placeholder="Min. 8 characters"
-          />
+          {editingUser && (
+            <FormField
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              disabled
+            />
+          )}
+
+          {!editingUser && (
+            <FormField
+              label="Password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              error={errors.password}
+              required
+              placeholder="Min. 8 characters"
+            />
+          )}
 
           <FormField
             label="First Name"
@@ -276,12 +340,25 @@ const Users = () => {
             placeholder="Doe"
           />
 
+          <FormField
+            label="Role"
+            name="role"
+            as="select"
+            value={formData.role}
+            onChange={handleChange}
+            error={errors.role}
+            required
+          >
+            <option value="teacher">Teacher</option>
+            <option value="admin">Admin</option>
+          </FormField>
+
           <div className={styles.formActions}>
             <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" variant="primary" loading={submitting}>
-              Create Teacher
+              {editingUser ? 'Update User' : 'Create User'}
             </Button>
           </div>
         </form>

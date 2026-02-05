@@ -37,7 +37,9 @@ const Header = () => {
             <Backpack size={24} weight="regular" color="white" />
           </div>
           <h1>Extra Muros</h1>
-          <span className={styles.badge}>Admin</span>
+          <span className={styles.badge}>
+            {user?.role === 'teacher' ? 'Teacher' : 'Admin'}
+          </span>
         </div>
         <div className={styles.right}>
           <div className={styles.user}>

@@ -35,23 +35,23 @@ export function Settings() {
 
   const handleSync = async () => {
     if (!isOnline) {
-      showError('You need to be online to sync.');
+      showError('Je moet online zijn om te synchroniseren.');
       return;
     }
 
     try {
       await sync();
-      success('Sync completed successfully!');
+      success('Synchronisatie succesvol voltooid!');
     } catch (error) {
-      showError('Sync failed. Please try again.');
+      showError('Synchronisatie mislukt. Probeer het opnieuw.');
     }
   };
 
   const handleClearAll = async () => {
     const confirmed = await confirm({
-      title: 'Clear All Data',
-      message: 'Are you sure you want to delete all downloaded trips and data? This cannot be undone.',
-      confirmText: 'Delete All',
+      title: 'Alle Gegevens Wissen',
+      message: 'Weet je zeker dat je alle gedownloade uitstappen en gegevens wilt verwijderen? Dit kan niet ongedaan worden gemaakt.',
+      confirmText: 'Alles Verwijderen',
       variant: 'danger',
     });
 
@@ -62,9 +62,9 @@ export function Settings() {
       await clearAllData();
       await refreshTrips();
       await refreshStorage();
-      success('All data cleared successfully!');
+      success('Alle gegevens succesvol gewist!');
     } catch (error) {
-      showError('Failed to clear data. Please try again.');
+      showError('Kon gegevens niet wissen. Probeer het opnieuw.');
     } finally {
       setIsClearing(false);
     }
@@ -72,7 +72,7 @@ export function Settings() {
 
   const handleInstallApp = async () => {
     if (isInstalled) {
-      info('App is already installed!');
+      info('App is al geïnstalleerd!');
       return;
     }
 
@@ -82,25 +82,25 @@ export function Settings() {
       if (result.error === 'NO_PROMPT') {
         // Provide platform-specific instructions
         if (result.isIOS) {
-          info('To install on iOS: Tap the Share button and select "Add to Home Screen".');
+          info('Om te installeren op iOS: Tik op de Deel-knop en selecteer "Zet op beginscherm".');
         } else {
-          info('To install this app, look for "Install" or "Add to Home Screen" in your browser menu.');
+          info('Om deze app te installeren, zoek naar "Installeren" of "Zet op startscherm" in je browser menu.');
         }
       } else if (result.outcome === 'dismissed') {
-        info('Installation cancelled.');
+        info('Installatie geannuleerd.');
       } else {
-        showError('Failed to install app. Please try again.');
+        showError('Installatie mislukt. Probeer het opnieuw.');
       }
     } else {
-      success('App installed successfully!');
+      success('App succesvol geïnstalleerd!');
     }
   };
 
   const handleChangeClass = async () => {
     const confirmed = await confirm({
-      title: 'Change Class',
-      message: 'Are you sure you want to change your class? You will need to select a new class.',
-      confirmText: 'Change Class',
+      title: 'Klas Wijzigen',
+      message: 'Weet je zeker dat je van klas wilt veranderen? Je moet een nieuwe klas selecteren.',
+      confirmText: 'Klas Wijzigen',
       variant: 'primary',
     });
 
@@ -112,9 +112,9 @@ export function Settings() {
 
   const handleLogout = async () => {
     const confirmed = await confirm({
-      title: 'Log Out',
-      message: 'Are you sure you want to log out?',
-      confirmText: 'Log Out',
+      title: 'Uitloggen',
+      message: 'Weet je zeker dat je wilt uitloggen?',
+      confirmText: 'Uitloggen',
       variant: 'primary',
     });
 
@@ -126,7 +126,7 @@ export function Settings() {
 
   return (
     <div className="settings">
-      <Header title="Settings" showBack={true} />
+      <Header title="Instellingen" showBack={true} />
 
       <div className="settings__container">
         <section className="settings__section">
@@ -138,8 +138,8 @@ export function Settings() {
             </div>
 
             <div className="settings__row">
-              <span className="settings__label">Class</span>
-              <Badge variant="primary">{selectedClass?.name || 'Unknown'}</Badge>
+              <span className="settings__label">Klas</span>
+              <Badge variant="primary">{selectedClass?.name || 'Onbekend'}</Badge>
             </div>
 
             <div className="settings__actions">
@@ -150,7 +150,7 @@ export function Settings() {
               >
                 <Icon name="users" size="medium" />
                 {' '}
-                Change Class
+                Klas Wijzigen
               </Button>
 
               <Button
@@ -160,14 +160,14 @@ export function Settings() {
               >
                 <Icon name="logout" size="medium" />
                 {' '}
-                Log Out
+                Uitloggen
               </Button>
             </div>
           </div>
         </section>
 
         <section className="settings__section">
-          <h3 className="settings__section-title">Connection Status</h3>
+          <h3 className="settings__section-title">Verbindingsstatus</h3>
           <div className="settings__card">
             <div className="settings__row">
               <span className="settings__label">Status</span>
@@ -180,7 +180,7 @@ export function Settings() {
 
             {lastSyncTime && (
               <div className="settings__row">
-                <span className="settings__label">Last Sync</span>
+                <span className="settings__label">Laatst Gesynchroniseerd</span>
                 <span className="settings__value">
                   {formatDateTime(lastSyncTime)}
                 </span>
@@ -196,31 +196,31 @@ export function Settings() {
               >
                 <Icon name="sync" size="medium" />
                 {' '}
-                {isSyncing ? 'Syncing...' : 'Sync Now'}
+                {isSyncing ? 'Synchroniseren...' : 'Nu Synchroniseren'}
               </Button>
             </div>
           </div>
         </section>
 
         <section className="settings__section">
-          <h3 className="settings__section-title">Storage</h3>
+          <h3 className="settings__section-title">Opslag</h3>
           <div className="settings__card">
             <div className="settings__row">
-              <span className="settings__label">Downloaded Trips</span>
+              <span className="settings__label">Gedownloade Uitstappen</span>
               <Badge variant="info">{downloadedTrips.length}</Badge>
             </div>
 
             {storageInfo && (
               <>
                 <div className="settings__row">
-                  <span className="settings__label">Storage Used</span>
+                  <span className="settings__label">Opslag Gebruikt</span>
                   <span className="settings__value">
                     {formatBytes(storageInfo.usage)} / {formatBytes(storageInfo.quota)}
                   </span>
                 </div>
 
                 <div className="settings__row">
-                  <span className="settings__label">Usage</span>
+                  <span className="settings__label">Gebruik</span>
                   <span className="settings__value">
                     {storageInfo.percentUsed.toFixed(1)}%
                   </span>
@@ -236,7 +236,7 @@ export function Settings() {
               >
                 <Icon name="sync" size="medium" />
                 {' '}
-                Refresh Storage Info
+                Opslaginfo Vernieuwen
               </Button>
 
               <Button
@@ -247,7 +247,7 @@ export function Settings() {
               >
                 <Icon name="delete" size="medium" />
                 {' '}
-                {isClearing ? 'Clearing...' : 'Clear All Data'}
+                {isClearing ? 'Bezig met wissen...' : 'Alle Gegevens Wissen'}
               </Button>
             </div>
           </div>
@@ -257,7 +257,7 @@ export function Settings() {
           <h3 className="settings__section-title">App</h3>
           <div className="settings__card">
             <div className="settings__row">
-              <span className="settings__label">Version</span>
+              <span className="settings__label">Versie</span>
               <span className="settings__value">1.0.0</span>
             </div>
 
@@ -270,7 +270,7 @@ export function Settings() {
               >
                 <Icon name={isInstalled ? "check" : "download"} size="medium" />
                 {' '}
-                {isInstalled ? 'App Installed' : (isInstallable ? 'Install App Now' : 'Install App')}
+                {isInstalled ? 'App Geïnstalleerd' : (isInstallable ? 'App Nu Installeren' : 'App Installeren')}
               </Button>
 
               <Button
@@ -280,21 +280,21 @@ export function Settings() {
               >
                 <Icon name="home" size="medium" />
                 {' '}
-                Back to Home
+                Terug naar Home
               </Button>
             </div>
           </div>
         </section>
 
         <section className="settings__section">
-          <h3 className="settings__section-title">About</h3>
+          <h3 className="settings__section-title">Over</h3>
           <div className="settings__card">
             <p className="settings__about">
-              Extra Muros is an offline-first educational trip companion app.
-              Download trips and access all content even without an internet connection.
+              Extra Muros is een offline-first educatieve uitstap begeleider app.
+              Download uitstappen en krijg toegang tot alle content, zelfs zonder internetverbinding.
             </p>
             <p className="settings__about settings__about--small">
-              Made with React and IndexedDB
+              Gemaakt met React en IndexedDB
             </p>
           </div>
         </section>

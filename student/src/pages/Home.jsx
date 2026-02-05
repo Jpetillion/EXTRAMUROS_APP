@@ -14,7 +14,7 @@ export function Home() {
   const navigate = useNavigate();
   const { selectedClass, changeClass } = useAuth();
   const { downloadedTrips } = useTripContext();
-  const { isOnline, isSyncing } = useOfflineContext();
+  const { isOnline } = useOfflineContext();
 
   const [classes, setClasses] = useState([]);
   const [loadingClasses, setLoadingClasses] = useState(true);
@@ -129,14 +129,7 @@ export function Home() {
             <h1>Extra Muros</h1>
           </div>
           <div className="home__header-right">
-            {isSyncing && (
-              <Badge variant="info" size="small">
-                <Icon name="sync" size="small" />
-                {' '}
-                Syncing
-              </Badge>
-            )}
-            {!isOnline && !isSyncing && (
+            {!isOnline && (
               <Badge variant="offline" size="small">
                 <Icon name="offline" size="small" />
                 {' '}
@@ -155,19 +148,20 @@ export function Home() {
       </div>
 
       <div className="home__container">
-        {/* Show selected class */}
+        {/* Show selected class with improved styling */}
         <div className="home__selected-class">
-          <Badge variant="primary" size="medium">
-            <Icon name="users" size="small" />
-            {' '}
-            {selectedClass.name}
-          </Badge>
+          <div className="home__class-badge">
+            <div className="home__class-badge-icon">
+              <Icon name="users" size="medium" color="white" />
+            </div>
+            <span className="home__class-badge-text">{selectedClass.name}</span>
+          </div>
         </div>
 
         <div className="home__hero">
           <h2 className="home__hero-title">Welkom terug!</h2>
           <p className="home__hero-description">
-            Ontdek en download educatieve uitstappen. Alle content is beschikbaar, zelfs zonder internetverbinding.
+            Bekijk en download educatieve uitstappen. Alle content is beschikbaar, zelfs zonder internetverbinding.
           </p>
         </div>
 
@@ -202,18 +196,6 @@ export function Home() {
             <Icon name="map" size="medium" />
             {' '}
             Mijn Uitstappen
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="large"
-            fullWidth
-            onClick={() => navigate('/browse')}
-            disabled={!isOnline}
-          >
-            <Icon name="download" size="medium" />
-            {' '}
-            Ontdek & Download
           </Button>
         </div>
 

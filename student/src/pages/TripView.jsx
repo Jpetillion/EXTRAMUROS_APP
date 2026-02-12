@@ -6,6 +6,9 @@ import { Spinner } from '../components/atoms/Spinner.jsx';
 import { Badge } from '../components/atoms/Badge.jsx';
 import { Icon } from '../components/atoms/Icon.jsx';
 import { MapViewer } from '../components/molecules/MapViewer.jsx';
+import { PhotoGallery } from '../components/molecules/PhotoGallery.jsx';
+import { AudioPlaylist } from '../components/molecules/AudioPlaylist.jsx';
+import { VideoGallery } from '../components/molecules/VideoGallery.jsx';
 import { getTrip, getModulesByTrip, getAllProgress } from '../utils/storage.js';
 import { formatDate } from '../utils/helpers.js';
 import './TripView.css';
@@ -310,14 +313,22 @@ export function TripView() {
                         address={event.address}
                       />
                     )}
-                    {event.imageBase64 && (
+
+                    {/* Photo Gallery - supports both new galleries and old single image */}
+                    {event.photos && event.photos.length > 0 ? (
+                      <PhotoGallery photos={event.photos} />
+                    ) : event.imageBase64 && (
                       <img
                         src={event.imageBase64}
                         alt={event.title}
                         className="trip-view__event-image"
                       />
                     )}
-                    {(event.audioBase64 || event.audioUrl) && (
+
+                    {/* Audio Playlist - supports both new galleries and old single audio */}
+                    {event.audioFiles && event.audioFiles.length > 0 ? (
+                      <AudioPlaylist audioFiles={event.audioFiles} />
+                    ) : (event.audioBase64 || event.audioUrl) && (
                       <div className="trip-view__event-audio-wrapper">
                         <audio controls className="trip-view__event-audio">
                           <source src={event.audioBase64 || event.audioUrl} type={event.audioMimeType || 'audio/mpeg'} />
@@ -331,7 +342,11 @@ export function TripView() {
                         )}
                       </div>
                     )}
-                    {(event.videoUrl || event.video_url) && (() => {
+
+                    {/* Video Gallery - supports both new galleries and old single video */}
+                    {event.videos && event.videos.length > 0 ? (
+                      <VideoGallery videos={event.videos} />
+                    ) : (event.videoUrl || event.video_url) && (() => {
                       const embedUrl = getYouTubeEmbedUrl(event.videoUrl || event.video_url);
                       return embedUrl ? (
                         <div className="trip-view__event-video">

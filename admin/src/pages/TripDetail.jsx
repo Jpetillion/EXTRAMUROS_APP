@@ -11,6 +11,7 @@ import ConfirmModal from '../components/molecules/ConfirmModal';
 import EventForm from '../components/organisms/EventForm_GALLERIES';
 import DayManager from '../components/organisms/DayManager';
 import DocumentManager from '../components/organisms/DocumentManager';
+import CheckInMap from '../components/organisms/CheckInMap';
 import styles from './TripDetail.module.css';
 
 const TripDetail = () => {
@@ -125,15 +126,17 @@ const TripDetail = () => {
         throw new Error(errData.error || 'Failed to save event');
       }
 
-      success(editingEvent ? 'Event updated successfully' : 'Event created successfully');
-      setIsEventModalOpen(false);
-      setEditingEvent(null);
-      fetchTripData();
+      // Parse and return the saved event so EventForm can upload media
+      const savedEvent = await response.json();
+
+      // Don't close modal or show success yet - let EventForm handle that after media uploads
+      setSubmittingEvent(false);
+      return savedEvent;
     } catch (err) {
       console.error('Failed to save event:', err);
       showError(err.message || 'Failed to save event');
-    } finally {
       setSubmittingEvent(false);
+      throw err; // Re-throw so EventForm knows it failed
     }
   };
 
@@ -435,19 +438,10 @@ const TripDetail = () => {
         )}
       </Card>
 
-      {/* Progress Report Section */}
+      {/* Student Check-Ins Map */}
       {trip.published && (
         <Card>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Student Progress</h2>
-            <Button
-              size="small"
-              onClick={fetchProgressReport}
-              loading={loadingProgress}
-            >
-              View Progress Report
-            </Button>
-          </div>
+          <CheckInMap tripId={id} />
         </Card>
       )}
 
@@ -467,14 +461,22 @@ const TripDetail = () => {
       {/* Event Modal */}
       <Modal
         isOpen={isEventModalOpen}
-        onClose={() => setIsEventModalOpen(false)}
+        onClose={() => {
+          setIsEventModalOpen(false);
+          setEditingEvent(null);
+          fetchTripData(); // Refresh trip data when modal closes
+        }}
         title={editingEvent ? 'Edit Event' : 'Create New Event'}
         size="large"
       >
         <EventForm
           event={editingEvent}
           onSave={handleEventSubmit}
-          onCancel={() => setIsEventModalOpen(false)}
+          onCancel={() => {
+            setIsEventModalOpen(false);
+            setEditingEvent(null);
+            fetchTripData(); // Refresh trip data
+          }}
           isLoading={submittingEvent}
         />
       </Modal>

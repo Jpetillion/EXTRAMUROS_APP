@@ -3,6 +3,7 @@ import Button from '../atoms/Button';
 import FormField from '../molecules/FormField';
 import { MapPicker } from '../molecules/MapPicker';
 import { mediaAPI } from '../../utils/api';
+import { useToast } from '../../hooks/useToast';
 import styles from './EventForm.module.css';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
@@ -54,6 +55,8 @@ const getYouTubeEmbedUrl = (url) => {
 };
 
 const EventForm = ({ event, onSave, onCancel, isLoading }) => {
+  const { success: showSuccess, error: showError } = useToast();
+
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -458,8 +461,13 @@ const EventForm = ({ event, onSave, onCancel, isLoading }) => {
 
       await Promise.all([...photoPromises, ...audioPromises, ...videoPromises, ...updatePromises]);
 
+      // Success! Show message and close modal
+      showSuccess(event ? 'Event updated successfully' : 'Event created successfully');
+      onCancel(); // Close the modal
+
     } catch (err) {
       console.error('Error saving event with media:', err);
+      showError(err.message || 'Failed to save event');
       throw err;
     }
   };

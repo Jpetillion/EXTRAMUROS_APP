@@ -109,7 +109,15 @@ router.delete('/:id', authMiddleware, requireRole('admin'), async (req, res) => 
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
     console.error('Delete user error:', error);
-    res.status(500).json({ error: 'Failed to delete user' });
+
+    // Check if it's a foreign key constraint error
+    if (error.message && (error.message.includes('FOREIGN KEY') || error.message.includes('constraint'))) {
+      return res.status(400).json({
+        error: 'Cannot delete user who has created trips or uploaded documents. Please reassign or delete their content first.'
+      });
+    }
+
+    res.status(500).json({ error: error.message || 'Failed to delete user' });
   }
 });
 

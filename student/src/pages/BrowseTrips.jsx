@@ -145,6 +145,122 @@ export function BrowseTrips() {
             console.error('Failed to download audio for event:', event.id, err);
           }
 
+          // Download photo gallery
+          try {
+            console.log(`Fetching photo gallery for event ${event.id}...`);
+            const photosResponse = await fetch(`${API_URL}/events/${event.id}/photos`);
+
+            if (photosResponse.ok && photosResponse.status === 200) {
+              const photosList = await photosResponse.json();
+              console.log(`Found ${photosList.length} photos for event ${event.id}`);
+
+              const photosWithData = await Promise.all(
+                photosList.map(async (photo) => {
+                  try {
+                    const photoDataResponse = await fetch(`${API_URL}/events/${event.id}/photos/${photo.id}`);
+                    if (photoDataResponse.ok) {
+                      const blob = await photoDataResponse.blob();
+                      if (blob.size > 0) {
+                        const base64 = await blobToBase64(blob);
+                        return {
+                          id: photo.id,
+                          title: photo.title,
+                          imageBase64: base64,
+                          mimeType: blob.type
+                        };
+                      }
+                    }
+                    return null;
+                  } catch (err) {
+                    console.error(`Failed to download photo ${photo.id}:`, err);
+                    return null;
+                  }
+                })
+              );
+
+              eventWithMedia.photos = photosWithData.filter(p => p !== null);
+              console.log(`✓ Downloaded ${eventWithMedia.photos.length} photos for event ${event.id}`);
+            }
+          } catch (err) {
+            console.error('Failed to download photo gallery for event:', event.id, err);
+          }
+
+          // Download audio gallery
+          try {
+            console.log(`Fetching audio gallery for event ${event.id}...`);
+            const audioListResponse = await fetch(`${API_URL}/events/${event.id}/audio`);
+
+            if (audioListResponse.ok && audioListResponse.status === 200) {
+              const audioList = await audioListResponse.json();
+              console.log(`Found ${audioList.length} audio files for event ${event.id}`);
+
+              const audioWithData = await Promise.all(
+                audioList.map(async (audio) => {
+                  try {
+                    const audioDataResponse = await fetch(`${API_URL}/events/${event.id}/audio/${audio.id}`);
+                    if (audioDataResponse.ok) {
+                      const contentLength = audioDataResponse.headers.get('Content-Length');
+
+                      // If too large, store URL instead
+                      if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
+                        console.warn(`Audio file ${audio.id} is too large, storing URL`);
+                        return {
+                          id: audio.id,
+                          title: audio.title,
+                          url: `${API_URL}/events/${event.id}/audio/${audio.id}`,
+                          duration_seconds: audio.duration_seconds
+                        };
+                      }
+
+                      const blob = await audioDataResponse.blob();
+                      if (blob.size > 0) {
+                        const base64 = await blobToBase64(blob);
+                        return {
+                          id: audio.id,
+                          title: audio.title,
+                          audioBase64: base64,
+                          mimeType: blob.type,
+                          duration_seconds: audio.duration_seconds
+                        };
+                      }
+                    }
+                    return null;
+                  } catch (err) {
+                    console.error(`Failed to download audio ${audio.id}:`, err);
+                    return null;
+                  }
+                })
+              );
+
+              eventWithMedia.audioFiles = audioWithData.filter(a => a !== null);
+              console.log(`✓ Downloaded ${eventWithMedia.audioFiles.length} audio files for event ${event.id}`);
+            }
+          } catch (err) {
+            console.error('Failed to download audio gallery for event:', event.id, err);
+          }
+
+          // Download video gallery (just metadata, videos are URLs)
+          try {
+            console.log(`Fetching video gallery for event ${event.id}...`);
+            const videosResponse = await fetch(`${API_URL}/events/${event.id}/videos`);
+
+            if (videosResponse.ok && videosResponse.status === 200) {
+              const videosList = await videosResponse.json();
+              console.log(`Found ${videosList.length} videos for event ${event.id}`);
+
+              eventWithMedia.videos = videosList.map(video => ({
+                id: video.id,
+                title: video.title,
+                video_url: video.video_url,
+                thumbnail_url: video.thumbnail_url
+              }));
+
+              console.log(`✓ Loaded ${eventWithMedia.videos.length} videos for event ${event.id}`);
+            }
+          } catch (err) {
+            console.error('Failed to download video gallery for event:', event.id, err);
+          }
+
           return eventWithMedia;
         })
       );

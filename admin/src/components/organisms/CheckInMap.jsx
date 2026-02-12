@@ -66,6 +66,11 @@ const CheckInMap = ({ tripId }) => {
       }
 
       const data = await response.json();
+      console.log('📍 Received location data from API:', data);
+      if (data && data.length > 0) {
+        console.log('📍 First location object:', data[0]);
+        console.log('📍 Username field:', data[0].student_username);
+      }
       setCheckIns(data);
     } catch (err) {
       console.error('Error fetching student locations:', err);
@@ -76,28 +81,34 @@ const CheckInMap = ({ tripId }) => {
   };
 
   const formatTimestamp = (timestamp) => {
-    if (!timestamp) return 'Unknown';
+    if (!timestamp) {
+      console.warn('No timestamp provided');
+      return 'Unknown';
+    }
 
     try {
+      console.log('Formatting timestamp:', timestamp, 'Type:', typeof timestamp);
+
       const date = new Date(timestamp * 1000);
+      console.log('Converted to date:', date, 'Valid:', !isNaN(date.getTime()));
 
       // Check if date is valid
       if (isNaN(date.getTime())) {
         console.error('Invalid timestamp:', timestamp);
-        return 'Invalid Date';
+        return `Invalid (${timestamp})`;
       }
 
-      // Use more compatible formatting
-      return date.toLocaleString('nl-NL', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      // Manual formatting for maximum compatibility
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      return `${day}-${month}-${year} ${hours}:${minutes}`;
     } catch (error) {
       console.error('Error formatting timestamp:', error, timestamp);
-      return 'Error';
+      return `Error (${timestamp})`;
     }
   };
 
@@ -175,7 +186,7 @@ const CheckInMap = ({ tripId }) => {
             >
               <Popup>
                 <div className={styles.popup}>
-                  <strong>{pos.username}</strong>
+                  <strong>{pos.username || 'Unknown Student'}</strong>
                   <p className={styles.popupTime}>Last seen: {formatTimestamp(pos.timestamp)}</p>
                   {pos.accuracy && (
                     <p className={styles.popupAccuracy}>
@@ -195,7 +206,7 @@ const CheckInMap = ({ tripId }) => {
           {checkIns.slice(0, 10).map((location, index) => (
             <div key={index} className={styles.checkInItem}>
               <div className={styles.checkInUser}>
-                <strong>{location.student_username}</strong>
+                <strong>{location.student_username || 'Unknown Student'}</strong>
               </div>
               <div className={styles.checkInDetails}>
                 <span className={styles.checkInTime}>

@@ -148,16 +148,17 @@ export const createTripEvent = async (tripId, eventData) => {
     audioMimeType = null,
     videoUrl = null,
     orderIndex = 0,
-    metadata = null
+    metadata = null,
+    dayId = null
   } = eventData;
 
   await db.execute({
     sql: `INSERT INTO trip_events
-          (id, trip_id, title, category, duration_minutes, text_content, lat, lng, address,
+          (id, trip_id, day_id, title, category, duration_minutes, text_content, lat, lng, address,
            image_blob, image_mime_type, audio_blob, audio_mime_type, video_url, order_index, metadata)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
-      id, tripId, title, category, durationMinutes, textContent, lat, lng, address,
+      id, tripId, dayId, title, category, durationMinutes, textContent, lat, lng, address,
       imageBlob, imageMimeType, audioBlob, audioMimeType, videoUrl, orderIndex, metadata
     ]
   });

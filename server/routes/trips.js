@@ -368,6 +368,7 @@ router.post(
         videoUrl: req.body.videoUrl,
         orderIndex: req.body.orderIndex ? parseInt(req.body.orderIndex) : 0,
         metadata: req.body.metadata,
+        dayId: req.body.dayId || null,
       };
 
       // Handle file uploads
@@ -427,6 +428,7 @@ router.put(
       if (req.body.videoUrl !== undefined) updates.videoUrl = req.body.videoUrl;
       if (req.body.orderIndex !== undefined) updates.orderIndex = parseInt(req.body.orderIndex);
       if (req.body.metadata !== undefined) updates.metadata = req.body.metadata;
+      if (req.body.dayId !== undefined) updates.dayId = req.body.dayId;
 
       // Handle file uploads
       if (req.files?.image?.[0]) {

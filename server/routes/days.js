@@ -75,8 +75,9 @@ router.post('/trips/:tripId/days', authMiddleware, requireRole('teacher', 'admin
     const { title, description, dayNumber, orderIndex } = req.body;
 
     // Validate required fields
-    if (!validateRequired({ title, dayNumber })) {
-      return res.status(400).json({ error: 'Title and dayNumber are required' });
+    const validationErrors = validateRequired(['title', 'dayNumber'], req.body);
+    if (validationErrors) {
+      return res.status(400).json({ error: 'Title and dayNumber are required', details: validationErrors });
     }
 
     const dayId = await createTripDay(tripId, {
@@ -90,7 +91,7 @@ router.post('/trips/:tripId/days', authMiddleware, requireRole('teacher', 'admin
     res.status(201).json(day);
   } catch (error) {
     console.error('Create day error:', error);
-    res.status(500).json({ error: 'Failed to create day' });
+    res.status(500).json({ error: 'Failed to create day', message: error.message });
   }
 });
 

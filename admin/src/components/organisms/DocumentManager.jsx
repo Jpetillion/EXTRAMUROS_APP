@@ -59,7 +59,11 @@ const DocumentManager = ({ tripId }) => {
       setSelectedFile(null);
       setUploadForm({ title: '', description: '' });
       await fetchDocuments();
-      document.getElementById('file-input').value = '';
+      // Reset file input safely
+      const fileInput = document.getElementById('file-input');
+      if (fileInput) {
+        fileInput.value = '';
+      }
     } catch (err) {
       console.error('Failed to upload document:', err);
       setError(err.data?.error || 'Failed to upload document');
@@ -71,7 +75,8 @@ const DocumentManager = ({ tripId }) => {
   const handleDownload = async (doc) => {
     try {
       const response = await documentsAPI.getById(tripId, doc.id);
-      const blob = new Blob([response.data], { type: doc.mime_type });
+      const mimeType = doc.mime_type || doc.mimeType || 'application/octet-stream';
+      const blob = new Blob([response.data], { type: mimeType });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -106,10 +111,13 @@ const DocumentManager = ({ tripId }) => {
   };
 
   const getFileIcon = (mimeType) => {
-    if (mimeType.includes('pdf')) return '📄';
-    if (mimeType.includes('word')) return '📝';
-    if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return '📊';
-    if (mimeType.includes('text')) return '📃';
+    if (!mimeType) return '📎';
+    const type = mimeType.toLowerCase();
+    if (type.includes('pdf')) return '📄';
+    if (type.includes('word')) return '📝';
+    if (type.includes('excel') || type.includes('spreadsheet')) return '📊';
+    if (type.includes('text')) return '📃';
+    if (type.includes('image')) return '🖼️';
     return '📎';
   };
 
@@ -135,14 +143,13 @@ const DocumentManager = ({ tripId }) => {
             id="file-input"
             type="file"
             onChange={handleFileSelect}
-            accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
             className={styles.hiddenInput}
           />
           <label htmlFor="file-input" className={styles.fileLabel}>
             <span className={styles.fileIcon}>📎</span>
             {selectedFile ? selectedFile.name : 'Choose file...'}
           </label>
-          <span className={styles.fileHint}>PDF, DOC, DOCX, XLS, XLSX, TXT (max 50MB)</span>
+          <span className={styles.fileHint}>All file types accepted (max 50MB)</span>
         </div>
 
         {selectedFile && (
@@ -169,7 +176,10 @@ const DocumentManager = ({ tripId }) => {
                 onClick={() => {
                   setSelectedFile(null);
                   setUploadForm({ title: '', description: '' });
-                  document.getElementById('file-input').value = '';
+                  const fileInput = document.getElementById('file-input');
+                  if (fileInput) {
+                    fileInput.value = '';
+                  }
                 }}
               >
                 Cancel
@@ -193,7 +203,7 @@ const DocumentManager = ({ tripId }) => {
         <div className={styles.documentsList}>
           {documents.map((doc) => (
             <div key={doc.id} className={styles.document}>
-              <div className={styles.docIcon}>{getFileIcon(doc.mime_type)}</div>
+              <div className={styles.docIcon}>{getFileIcon(doc.mime_type || doc.mimeType)}</div>
               <div className={styles.docInfo}>
                 <h4 className={styles.docTitle}>{doc.title || doc.filename}</h4>
                 {doc.description && <p className={styles.docDescription}>{doc.description}</p>}

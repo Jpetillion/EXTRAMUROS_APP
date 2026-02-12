@@ -78,6 +78,7 @@ const EventForm = ({ event, onSave, onCancel, isLoading }) => {
     lng: null,
     address: '',
     videoUrl: '',
+    dayId: null,
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -97,6 +98,7 @@ const EventForm = ({ event, onSave, onCancel, isLoading }) => {
         lng: event.lng || null,
         address: event.address || '',
         videoUrl: event.videoUrl || event.video_url || '',
+        dayId: event.dayId || event.day_id || null,
       });
 
       // Set existing media previews if editing
@@ -237,6 +239,9 @@ const EventForm = ({ event, onSave, onCancel, isLoading }) => {
       submitData.append('lng', formData.lng !== null ? formData.lng : '');
       submitData.append('address', formData.address || '');
       submitData.append('videoUrl', formData.videoUrl || '');
+      if (formData.dayId) {
+        submitData.append('dayId', formData.dayId);
+      }
 
       // Add file fields
       if (imageFile) {

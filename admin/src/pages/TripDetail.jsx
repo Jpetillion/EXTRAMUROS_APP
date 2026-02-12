@@ -9,6 +9,8 @@ import Spinner from '../components/atoms/Spinner';
 import Modal from '../components/molecules/Modal';
 import ConfirmModal from '../components/molecules/ConfirmModal';
 import EventForm from '../components/organisms/EventForm';
+import DayManager from '../components/organisms/DayManager';
+import DocumentManager from '../components/organisms/DocumentManager';
 import styles from './TripDetail.module.css';
 
 const TripDetail = () => {
@@ -589,6 +591,19 @@ const TripDetail = () => {
           </div>
         </Card>
       )}
+
+      {/* Day Management Section */}
+      <DayManager
+        tripId={id}
+        onUpdate={fetchTrip}
+        onAddEvent={(dayId) => {
+          setEditingEvent({ dayId });
+          setIsEventModalOpen(true);
+        }}
+      />
+
+      {/* Private Documents Section */}
+      <DocumentManager tripId={id} />
 
       {/* Events Section */}
       <Card>

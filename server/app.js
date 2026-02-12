@@ -35,6 +35,12 @@ console.log('[APP] Imported statsRoutes:', statsRoutes ? 'SUCCESS' : 'FAILED');
 import syncRoutes from './routes/sync.js';
 console.log('[APP] Imported syncRoutes:', syncRoutes ? 'SUCCESS' : 'FAILED');
 
+import daysRoutes from './routes/days.js';
+console.log('[APP] Imported daysRoutes:', daysRoutes ? 'SUCCESS' : 'FAILED');
+
+import mediaRoutes from './routes/media.js';
+console.log('[APP] Imported mediaRoutes:', mediaRoutes ? 'SUCCESS' : 'FAILED');
+
 const app = express();
 console.log('[APP] Express app created');
 
@@ -93,6 +99,10 @@ app.use('/api/stats', statsRoutes);
 console.log('[APP] Registered /api/stats');
 app.use('/api/sync', syncRoutes);
 console.log('[APP] Registered /api/sync');
+app.use('/api', daysRoutes);
+console.log('[APP] Registered /api (days routes)');
+app.use('/api', mediaRoutes);
+console.log('[APP] Registered /api (media routes)');
 console.log('[APP] All routes registered successfully');
 
 // Error handling

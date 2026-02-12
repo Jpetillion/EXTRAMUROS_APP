@@ -605,3 +605,368 @@ export const updateUserPhoneNumber = async (userId, phoneNumber) => {
     args: [phoneNumber, userId]
   });
 };
+
+// ========================================
+// TRIP DAYS (nieuwe hiërarchie laag)
+// ========================================
+
+export const createTripDay = async (tripId, { title, description = null, dayNumber, orderIndex = 0 }) => {
+  const id = randomUUID();
+  await db.execute({
+    sql: `INSERT INTO trip_days (id, trip_id, title, description, day_number, order_index)
+          VALUES (?, ?, ?, ?, ?, ?)`,
+    args: [id, tripId, title, description, dayNumber, orderIndex]
+  });
+  return id;
+};
+
+export const getTripDaysByTripId = async (tripId) => {
+  const result = await db.execute({
+    sql: 'SELECT * FROM trip_days WHERE trip_id = ? ORDER BY order_index ASC, day_number ASC',
+    args: [tripId]
+  });
+  return result.rows;
+};
+
+export const getTripDayById = async (dayId) => {
+  const result = await db.execute({
+    sql: 'SELECT * FROM trip_days WHERE id = ?',
+    args: [dayId]
+  });
+  return result.rows[0] || null;
+};
+
+export const updateTripDay = async (dayId, updates) => {
+  const fields = [];
+  const args = [];
+
+  for (const [key, value] of Object.entries(updates)) {
+    // Convert camelCase to snake_case
+    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    fields.push(`${snakeKey} = ?`);
+    args.push(value);
+  }
+
+  if (fields.length === 0) return;
+
+  args.push(dayId);
+  await db.execute({
+    sql: `UPDATE trip_days SET ${fields.join(', ')}, updated_at = strftime('%s', 'now') WHERE id = ?`,
+    args
+  });
+};
+
+export const deleteTripDay = async (dayId) => {
+  await db.execute({
+    sql: 'DELETE FROM trip_days WHERE id = ?',
+    args: [dayId]
+  });
+};
+
+export const reorderTripDays = async (tripId, dayIds) => {
+  // dayIds is an array of day IDs in the new order
+  for (let i = 0; i < dayIds.length; i++) {
+    await db.execute({
+      sql: 'UPDATE trip_days SET order_index = ? WHERE id = ? AND trip_id = ?',
+      args: [i, dayIds[i], tripId]
+    });
+  }
+};
+
+// ========================================
+// MEDIA GALLERIES - PHOTOS
+// ========================================
+
+export const addTripPhoto = async (eventId, { title, imageBlob, mimeType, orderIndex = 0 }) => {
+  const id = randomUUID();
+  await db.execute({
+    sql: `INSERT INTO trip_photos (id, event_id, title, image_blob, image_mime_type, order_index)
+          VALUES (?, ?, ?, ?, ?, ?)`,
+    args: [id, eventId, title, imageBlob, mimeType, orderIndex]
+  });
+  return id;
+};
+
+export const getTripPhotos = async (eventId) => {
+  const result = await db.execute({
+    sql: 'SELECT id, event_id, title, image_mime_type, order_index, created_at, updated_at FROM trip_photos WHERE event_id = ? ORDER BY order_index ASC',
+    args: [eventId]
+  });
+  return result.rows;
+};
+
+export const getTripPhotoById = async (photoId) => {
+  const result = await db.execute({
+    sql: 'SELECT * FROM trip_photos WHERE id = ?',
+    args: [photoId]
+  });
+  return result.rows[0] || null;
+};
+
+export const updateTripPhoto = async (photoId, updates) => {
+  const fields = [];
+  const args = [];
+
+  for (const [key, value] of Object.entries(updates)) {
+    // Convert camelCase to snake_case
+    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    fields.push(`${snakeKey} = ?`);
+    args.push(value);
+  }
+
+  if (fields.length === 0) return;
+
+  args.push(photoId);
+  await db.execute({
+    sql: `UPDATE trip_photos SET ${fields.join(', ')}, updated_at = strftime('%s', 'now') WHERE id = ?`,
+    args
+  });
+};
+
+export const deleteTripPhoto = async (photoId) => {
+  await db.execute({
+    sql: 'DELETE FROM trip_photos WHERE id = ?',
+    args: [photoId]
+  });
+};
+
+// ========================================
+// MEDIA GALLERIES - AUDIO
+// ========================================
+
+export const addTripAudio = async (eventId, { title, audioBlob, mimeType, duration = null, orderIndex = 0 }) => {
+  const id = randomUUID();
+  await db.execute({
+    sql: `INSERT INTO trip_audio (id, event_id, title, audio_blob, audio_mime_type, duration_seconds, order_index)
+          VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    args: [id, eventId, title, audioBlob, mimeType, duration, orderIndex]
+  });
+  return id;
+};
+
+export const getTripAudio = async (eventId) => {
+  const result = await db.execute({
+    sql: 'SELECT id, event_id, title, audio_mime_type, duration_seconds, order_index, created_at, updated_at FROM trip_audio WHERE event_id = ? ORDER BY order_index ASC',
+    args: [eventId]
+  });
+  return result.rows;
+};
+
+export const getTripAudioById = async (audioId) => {
+  const result = await db.execute({
+    sql: 'SELECT * FROM trip_audio WHERE id = ?',
+    args: [audioId]
+  });
+  return result.rows[0] || null;
+};
+
+export const updateTripAudio = async (audioId, updates) => {
+  const fields = [];
+  const args = [];
+
+  for (const [key, value] of Object.entries(updates)) {
+    // Convert camelCase to snake_case
+    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    fields.push(`${snakeKey} = ?`);
+    args.push(value);
+  }
+
+  if (fields.length === 0) return;
+
+  args.push(audioId);
+  await db.execute({
+    sql: `UPDATE trip_audio SET ${fields.join(', ')}, updated_at = strftime('%s', 'now') WHERE id = ?`,
+    args
+  });
+};
+
+export const deleteTripAudio = async (audioId) => {
+  await db.execute({
+    sql: 'DELETE FROM trip_audio WHERE id = ?',
+    args: [audioId]
+  });
+};
+
+// ========================================
+// MEDIA GALLERIES - VIDEOS
+// ========================================
+
+export const addTripVideo = async (eventId, { title, videoUrl, thumbnailUrl = null, orderIndex = 0 }) => {
+  const id = randomUUID();
+  await db.execute({
+    sql: `INSERT INTO trip_videos (id, event_id, title, video_url, thumbnail_url, order_index)
+          VALUES (?, ?, ?, ?, ?, ?)`,
+    args: [id, eventId, title, videoUrl, thumbnailUrl, orderIndex]
+  });
+  return id;
+};
+
+export const getTripVideos = async (eventId) => {
+  const result = await db.execute({
+    sql: 'SELECT * FROM trip_videos WHERE event_id = ? ORDER BY order_index ASC',
+    args: [eventId]
+  });
+  return result.rows;
+};
+
+export const getTripVideoById = async (videoId) => {
+  const result = await db.execute({
+    sql: 'SELECT * FROM trip_videos WHERE id = ?',
+    args: [videoId]
+  });
+  return result.rows[0] || null;
+};
+
+export const updateTripVideo = async (videoId, updates) => {
+  const fields = [];
+  const args = [];
+
+  for (const [key, value] of Object.entries(updates)) {
+    // Convert camelCase to snake_case
+    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    fields.push(`${snakeKey} = ?`);
+    args.push(value);
+  }
+
+  if (fields.length === 0) return;
+
+  args.push(videoId);
+  await db.execute({
+    sql: `UPDATE trip_videos SET ${fields.join(', ')}, updated_at = strftime('%s', 'now') WHERE id = ?`,
+    args
+  });
+};
+
+export const deleteTripVideo = async (videoId) => {
+  await db.execute({
+    sql: 'DELETE FROM trip_videos WHERE id = ?',
+    args: [videoId]
+  });
+};
+
+// ========================================
+// TRIP DOCUMENTS (private docs for teachers)
+// ========================================
+
+export const addTripDocument = async (tripId, { filename, title = null, documentBlob, mimeType, fileSize, description = null, uploadedBy, orderIndex = 0 }) => {
+  const id = randomUUID();
+  await db.execute({
+    sql: `INSERT INTO trip_documents (id, trip_id, filename, title, document_blob, mime_type, file_size, description, uploaded_by, order_index)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [id, tripId, filename, title, documentBlob, mimeType, fileSize, description, uploadedBy, orderIndex]
+  });
+  return id;
+};
+
+export const getTripDocuments = async (tripId) => {
+  const result = await db.execute({
+    sql: `SELECT id, trip_id, filename, title, mime_type, file_size, description, order_index, uploaded_by, created_at, updated_at
+          FROM trip_documents
+          WHERE trip_id = ?
+          ORDER BY order_index ASC, created_at DESC`,
+    args: [tripId]
+  });
+  return result.rows;
+};
+
+export const getTripDocumentById = async (docId) => {
+  const result = await db.execute({
+    sql: 'SELECT * FROM trip_documents WHERE id = ?',
+    args: [docId]
+  });
+  return result.rows[0] || null;
+};
+
+export const updateTripDocument = async (docId, updates) => {
+  const fields = [];
+  const args = [];
+
+  for (const [key, value] of Object.entries(updates)) {
+    // Convert camelCase to snake_case
+    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    fields.push(`${snakeKey} = ?`);
+    args.push(value);
+  }
+
+  if (fields.length === 0) return;
+
+  args.push(docId);
+  await db.execute({
+    sql: `UPDATE trip_documents SET ${fields.join(', ')}, updated_at = strftime('%s', 'now') WHERE id = ?`,
+    args
+  });
+};
+
+export const deleteTripDocument = async (docId) => {
+  await db.execute({
+    sql: 'DELETE FROM trip_documents WHERE id = ?',
+    args: [docId]
+  });
+};
+
+// ========================================
+// CHECK-IN TRACKING (GPS-based)
+// ========================================
+
+export const recordCheckIn = async ({ email, eventId, lat, lng, accuracy, timestamp = null }) => {
+  const id = randomUUID();
+  const checkInTime = timestamp || Math.floor(Date.now() / 1000);
+
+  // First get the trip_id for this event
+  const event = await getTripEventById(eventId);
+  if (!event) {
+    throw new Error('Event not found');
+  }
+
+  await db.execute({
+    sql: `INSERT INTO student_progress
+          (id, email, trip_id, event_id, completed, check_in_lat, check_in_lng, check_in_accuracy, check_in_timestamp, last_accessed_at)
+          VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+          completed = 1,
+          check_in_lat = ?,
+          check_in_lng = ?,
+          check_in_accuracy = ?,
+          check_in_timestamp = ?,
+          last_accessed_at = ?`,
+    args: [
+      id, email, event.trip_id, eventId, lat, lng, accuracy, checkInTime, checkInTime,
+      lat, lng, accuracy, checkInTime, checkInTime
+    ]
+  });
+  return id;
+};
+
+export const getCheckIns = async (tripId, eventId = null) => {
+  const sql = eventId
+    ? `SELECT
+        sp.email,
+        sp.event_id,
+        te.title as event_title,
+        sp.check_in_lat,
+        sp.check_in_lng,
+        sp.check_in_accuracy,
+        sp.check_in_timestamp,
+        sp.last_accessed_at
+      FROM student_progress sp
+      JOIN trip_events te ON sp.event_id = te.id
+      WHERE sp.trip_id = ? AND sp.event_id = ? AND sp.check_in_timestamp IS NOT NULL
+      ORDER BY sp.check_in_timestamp DESC`
+    : `SELECT
+        sp.email,
+        sp.event_id,
+        te.title as event_title,
+        sp.check_in_lat,
+        sp.check_in_lng,
+        sp.check_in_accuracy,
+        sp.check_in_timestamp,
+        sp.last_accessed_at
+      FROM student_progress sp
+      JOIN trip_events te ON sp.event_id = te.id
+      WHERE sp.trip_id = ? AND sp.check_in_timestamp IS NOT NULL
+      ORDER BY sp.check_in_timestamp DESC`;
+
+  const args = eventId ? [tripId, eventId] : [tripId];
+  const result = await db.execute({ sql, args });
+  return result.rows;
+};

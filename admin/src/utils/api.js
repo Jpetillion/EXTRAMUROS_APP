@@ -208,4 +208,68 @@ export const usersAPI = {
   getAllTeachers: () => api.get('/users?role=teacher'),
 };
 
+export const daysAPI = {
+  getAll: (tripId) => api.get(`/trips/${tripId}/days`),
+  getById: (tripId, dayId) => api.get(`/trips/${tripId}/days/${dayId}`),
+  create: (tripId, data) => api.post(`/trips/${tripId}/days`, data),
+  update: (tripId, dayId, data) => api.put(`/trips/${tripId}/days/${dayId}`, data),
+  delete: (tripId, dayId) => api.delete(`/trips/${tripId}/days/${dayId}`),
+  reorder: (tripId, dayIds) => api.put(`/trips/${tripId}/days/reorder`, { dayIds }),
+};
+
+export const mediaAPI = {
+  // Photos
+  getPhotos: (eventId) => api.get(`/events/${eventId}/photos`),
+  getPhoto: (eventId, photoId) => api.get(`/events/${eventId}/photos/${photoId}`),
+  uploadPhoto: (eventId, file, title, orderIndex = 0) => {
+    const formData = new FormData();
+    formData.append('photo', file);
+    formData.append('title', title);
+    formData.append('orderIndex', orderIndex);
+    return api.post(`/events/${eventId}/photos`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  updatePhoto: (eventId, photoId, data) => api.put(`/events/${eventId}/photos/${photoId}`, data),
+  deletePhoto: (eventId, photoId) => api.delete(`/events/${eventId}/photos/${photoId}`),
+
+  // Audio
+  getAudio: (eventId) => api.get(`/events/${eventId}/audio`),
+  getAudioFile: (eventId, audioId) => api.get(`/events/${eventId}/audio/${audioId}`),
+  uploadAudio: (eventId, file, title, duration = null, orderIndex = 0) => {
+    const formData = new FormData();
+    formData.append('audio', file);
+    formData.append('title', title);
+    if (duration) formData.append('duration', duration);
+    formData.append('orderIndex', orderIndex);
+    return api.post(`/events/${eventId}/audio`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  updateAudio: (eventId, audioId, data) => api.put(`/events/${eventId}/audio/${audioId}`, data),
+  deleteAudio: (eventId, audioId) => api.delete(`/events/${eventId}/audio/${audioId}`),
+
+  // Videos
+  getVideos: (eventId) => api.get(`/events/${eventId}/videos`),
+  addVideo: (eventId, data) => api.post(`/events/${eventId}/videos`, data),
+  updateVideo: (eventId, videoId, data) => api.put(`/events/${eventId}/videos/${videoId}`, data),
+  deleteVideo: (eventId, videoId) => api.delete(`/events/${eventId}/videos/${videoId}`),
+};
+
+export const documentsAPI = {
+  getAll: (tripId) => api.get(`/trips/${tripId}/documents`),
+  getById: (tripId, docId) => api.get(`/trips/${tripId}/documents/${docId}`, { responseType: 'blob' }),
+  upload: (tripId, file, title = null, description = null) => {
+    const formData = new FormData();
+    formData.append('document', file);
+    if (title) formData.append('title', title);
+    if (description) formData.append('description', description);
+    return api.post(`/trips/${tripId}/documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  update: (tripId, docId, data) => api.put(`/trips/${tripId}/documents/${docId}`, data),
+  delete: (tripId, docId) => api.delete(`/trips/${tripId}/documents/${docId}`),
+};
+
 export default api;

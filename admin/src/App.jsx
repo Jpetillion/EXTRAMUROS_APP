@@ -4,8 +4,6 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Trips from './pages/Trips';
 import TripDetail from './pages/TripDetail';
-import Classes from './pages/Classes';
-import ClassDetail from './pages/ClassDetail';
 import Users from './pages/Users';
 import Settings from './pages/Settings';
 import Header from './components/organisms/Header';
@@ -66,22 +64,6 @@ const App = () => {
               element={
                 <PrivateRoute>
                   <TripDetail />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/classes"
-              element={
-                <PrivateRoute>
-                  <Classes />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/classes/:id"
-              element={
-                <PrivateRoute>
-                  <ClassDetail />
                 </PrivateRoute>
               }
             />

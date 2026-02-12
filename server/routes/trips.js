@@ -21,7 +21,14 @@ import {
   removeTeacherFromTrip,
   updateTripTeacherVisibility,
   getTripTeachers,
-  getTripTeachersForStudent
+  getTripTeachersForStudent,
+  addTripDocument,
+  getTripDocuments,
+  getTripDocumentById,
+  updateTripDocument,
+  deleteTripDocument,
+  recordCheckIn,
+  getCheckIns
 } from '../models/db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validateRequired } from '../utils/validators.js';
@@ -46,6 +53,30 @@ const upload = multer({
       cb(null, true);
     } else {
       cb(new Error(`Invalid file type for ${file.fieldname}: ${file.mimetype}`));
+    }
+  }
+});
+
+// Configure multer for document uploads (larger file size limit)
+const documentUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB max for documents
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedDocTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/plain'
+    ];
+
+    if (file.fieldname === 'document' && allowedDocTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Invalid document type: ${file.mimetype}`));
     }
   }
 });
@@ -564,6 +595,214 @@ router.delete('/:tripId/teachers/:userId', authMiddleware, requireRole('teacher'
   } catch (error) {
     console.error('Remove teacher from trip error:', error);
     res.status(500).json({ error: 'Failed to remove teacher from trip' });
+  }
+});
+
+// ============= DOCUMENT ROUTES =============
+
+// Get all documents for a trip (teachers/admins only)
+router.get('/:tripId/documents', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
+  try {
+    const documents = await getTripDocuments(req.params.tripId);
+    res.json(documents);
+  } catch (error) {
+    console.error('Get trip documents error:', error);
+    res.status(500).json({ error: 'Failed to fetch trip documents' });
+  }
+});
+
+// Download a document (teachers/admins only)
+router.get('/:tripId/documents/:docId', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
+  try {
+    const doc = await getTripDocumentById(req.params.docId);
+
+    if (!doc) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    // Verify document belongs to trip
+    if (doc.trip_id !== req.params.tripId) {
+      return res.status(404).json({ error: 'Document not found in this trip' });
+    }
+
+    res.set('Content-Type', doc.mime_type);
+    res.set('Content-Disposition', `attachment; filename="${doc.filename}"`);
+    res.set('Cache-Control', 'private, max-age=3600'); // Cache for 1 hour
+    res.send(Buffer.from(doc.document_blob));
+  } catch (error) {
+    console.error('Download document error:', error);
+    res.status(500).json({ error: 'Failed to download document' });
+  }
+});
+
+// Upload a document (teachers/admins only)
+router.post('/:tripId/documents', authMiddleware, requireRole('teacher', 'admin'), documentUpload.single('document'), async (req, res) => {
+  try {
+    const { tripId } = req.params;
+    const { title, description } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'Document file is required' });
+    }
+
+    // Verify trip exists
+    const trip = await getTripById(tripId);
+    if (!trip) {
+      return res.status(404).json({ error: 'Trip not found' });
+    }
+
+    const docId = await addTripDocument(tripId, {
+      filename: req.file.originalname,
+      title: title || req.file.originalname,
+      documentBlob: req.file.buffer,
+      mimeType: req.file.mimetype,
+      fileSize: req.file.size,
+      description: description || null,
+      uploadedBy: req.user.id
+    });
+
+    const doc = await getTripDocumentById(docId);
+    // Return doc info without the blob
+    const { document_blob, ...docInfo } = doc;
+    res.status(201).json(docInfo);
+  } catch (error) {
+    console.error('Upload document error:', error);
+    res.status(500).json({ error: 'Failed to upload document' });
+  }
+});
+
+// Update document metadata (teachers/admins only)
+router.put('/:tripId/documents/:docId', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
+  try {
+    const { docId, tripId } = req.params;
+    const updates = {};
+
+    if (req.body.title !== undefined) updates.title = req.body.title;
+    if (req.body.description !== undefined) updates.description = req.body.description;
+    if (req.body.orderIndex !== undefined) updates.order_index = parseInt(req.body.orderIndex);
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'No valid fields to update' });
+    }
+
+    // Verify document exists and belongs to trip
+    const doc = await getTripDocumentById(docId);
+    if (!doc || doc.trip_id !== tripId) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    await updateTripDocument(docId, updates);
+
+    const updatedDoc = await getTripDocumentById(docId);
+    const { document_blob, ...docInfo } = updatedDoc;
+    res.json(docInfo);
+  } catch (error) {
+    console.error('Update document error:', error);
+    res.status(500).json({ error: 'Failed to update document' });
+  }
+});
+
+// Delete document (teachers/admins only)
+router.delete('/:tripId/documents/:docId', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
+  try {
+    const { docId, tripId } = req.params;
+
+    // Verify document exists and belongs to trip
+    const doc = await getTripDocumentById(docId);
+    if (!doc || doc.trip_id !== tripId) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    await deleteTripDocument(docId);
+    res.json({ success: true, message: 'Document deleted successfully' });
+  } catch (error) {
+    console.error('Delete document error:', error);
+    res.status(500).json({ error: 'Failed to delete document' });
+  }
+});
+
+// ============= CHECK-IN ROUTES =============
+
+// Record a check-in (public - no auth required for students)
+router.post('/:tripId/events/:eventId/check-in', async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { email, username, lat, lng, accuracy } = req.body;
+
+    if (!validateRequired({ lat, lng })) {
+      return res.status(400).json({ error: 'GPS coordinates (lat, lng) are required' });
+    }
+
+    // Use email or username
+    const studentIdentifier = email || username;
+    if (!studentIdentifier) {
+      return res.status(400).json({ error: 'Email or username is required' });
+    }
+
+    // Verify event exists
+    const event = await getTripEventById(eventId);
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    // Verify event has location
+    if (!event.lat || !event.lng) {
+      return res.status(400).json({ error: 'This event does not have a location for check-in' });
+    }
+
+    // Calculate distance (Haversine formula)
+    const R = 6371e3; // Earth radius in meters
+    const φ1 = parseFloat(lat) * Math.PI / 180;
+    const φ2 = event.lat * Math.PI / 180;
+    const Δφ = (event.lat - parseFloat(lat)) * Math.PI / 180;
+    const Δλ = (event.lng - parseFloat(lng)) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+
+    // Check if within 100m radius
+    if (distance > 100) {
+      return res.status(400).json({
+        error: 'You are too far from the event location',
+        distance: Math.round(distance),
+        requiredDistance: 100
+      });
+    }
+
+    const checkInId = await recordCheckIn({
+      email: studentIdentifier,
+      eventId,
+      lat: parseFloat(lat),
+      lng: parseFloat(lng),
+      accuracy: accuracy ? parseFloat(accuracy) : null
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Check-in recorded successfully',
+      id: checkInId,
+      distance: Math.round(distance)
+    });
+  } catch (error) {
+    console.error('Check-in error:', error);
+    res.status(500).json({ error: 'Failed to record check-in' });
+  }
+});
+
+// Get all check-ins for a trip (teachers/admins only)
+router.get('/:tripId/check-ins', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
+  try {
+    const { tripId } = req.params;
+    const { eventId } = req.query;
+
+    const checkIns = await getCheckIns(tripId, eventId || null);
+    res.json(checkIns);
+  } catch (error) {
+    console.error('Get check-ins error:', error);
+    res.status(500).json({ error: 'Failed to fetch check-ins' });
   }
 });
 

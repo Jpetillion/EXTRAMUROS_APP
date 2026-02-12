@@ -76,10 +76,29 @@ const CheckInMap = ({ tripId }) => {
   };
 
   const formatTimestamp = (timestamp) => {
-    return new Date(timestamp * 1000).toLocaleString('nl-NL', {
-      dateStyle: 'short',
-      timeStyle: 'short'
-    });
+    if (!timestamp) return 'Unknown';
+
+    try {
+      const date = new Date(timestamp * 1000);
+
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.error('Invalid timestamp:', timestamp);
+        return 'Invalid Date';
+      }
+
+      // Use more compatible formatting
+      return date.toLocaleString('nl-NL', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Error formatting timestamp:', error, timestamp);
+      return 'Error';
+    }
   };
 
   // Default center (Brussels, Belgium)
@@ -120,10 +139,12 @@ const CheckInMap = ({ tripId }) => {
   const positions = checkIns.map(location => ({
     lat: location.lat,
     lng: location.lng,
-    username: location.student_username,
+    username: location.student_username || 'Unknown',
     timestamp: location.last_updated,
     accuracy: location.accuracy
   }));
+
+  console.log('CheckInMap - Positions:', positions);
 
   return (
     <div className={styles.container}>

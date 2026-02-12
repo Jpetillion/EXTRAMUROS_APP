@@ -7,9 +7,14 @@ export function useLocationTracking(tripId, username, enabled = true) {
   const watchIdRef = useRef(null);
 
   useEffect(() => {
+    console.log('🗺️ Location tracking hook called:', { tripId, username, enabled });
+
     if (!enabled || !tripId || !username) {
+      console.log('⚠️ Location tracking disabled or missing params:', { enabled, tripId, username });
       return;
     }
+
+    console.log('✅ Starting location tracking...');
 
     let currentPosition = null;
 
@@ -18,7 +23,9 @@ export function useLocationTracking(tripId, username, enabled = true) {
       try {
         const { latitude, longitude, accuracy } = position.coords;
 
-        await fetch(`${API_URL}/trips/${tripId}/location`, {
+        console.log('📤 Sending location to server:', { username, lat: latitude, lng: longitude, tripId });
+
+        const response = await fetch(`${API_URL}/trips/${tripId}/location`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -31,22 +38,30 @@ export function useLocationTracking(tripId, username, enabled = true) {
           })
         });
 
-        console.log('Location updated:', { lat: latitude, lng: longitude });
+        if (!response.ok) {
+          const error = await response.text();
+          throw new Error(`Server error: ${response.status} - ${error}`);
+        }
+
+        console.log('✅ Location updated successfully:', { lat: latitude, lng: longitude });
       } catch (error) {
-        console.error('Failed to send location:', error);
+        console.error('❌ Failed to send location:', error);
       }
     };
 
     // Get initial position and set up continuous tracking
     if (navigator.geolocation) {
+      console.log('📍 Geolocation API available, setting up watch...');
+
       // Watch position changes (for when user moves)
       watchIdRef.current = navigator.geolocation.watchPosition(
         (position) => {
+          console.log('📍 Position obtained:', { lat: position.coords.latitude, lng: position.coords.longitude });
           currentPosition = position;
           sendLocation(position);
         },
         (error) => {
-          console.error('Geolocation error:', error);
+          console.error('❌ Geolocation error:', error.message, error);
         },
         {
           enableHighAccuracy: false, // Use false to save battery

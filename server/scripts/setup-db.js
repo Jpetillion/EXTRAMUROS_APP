@@ -137,6 +137,24 @@ const createTables = async () => {
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_student_progress_trip_id ON student_progress(trip_id)`);
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_student_progress_event_id ON student_progress(event_id)`);
 
+  // Student locations table (for real-time tracking)
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS student_locations (
+      id TEXT PRIMARY KEY,
+      trip_id TEXT NOT NULL,
+      student_username TEXT NOT NULL,
+      lat REAL NOT NULL,
+      lng REAL NOT NULL,
+      accuracy REAL,
+      last_updated INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+      FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
+      UNIQUE(trip_id, student_username)
+    )
+  `);
+
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_student_locations_trip_id ON student_locations(trip_id)`);
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_student_locations_updated ON student_locations(last_updated)`);
+
   console.log('✅ Database tables created successfully!');
   console.log('');
   console.log('📝 Note: Old tables (modules, content_items, trip_stops, student_downloads) are not created.');

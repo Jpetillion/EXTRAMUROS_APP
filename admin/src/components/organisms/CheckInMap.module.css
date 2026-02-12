@@ -87,8 +87,11 @@
 }
 
 .popup strong {
+  display: block;
   font-size: 1rem;
+  font-weight: 600;
   color: var(--color-gray-800);
+  margin-bottom: 0.25rem;
 }
 
 .popupEvent {

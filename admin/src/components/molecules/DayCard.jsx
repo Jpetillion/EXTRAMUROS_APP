@@ -89,9 +89,6 @@ const DayCard = ({ day, onEdit, onDelete, onMoveUp, onMoveDown, isFirst, isLast,
           {eventsCount === 0 ? (
             <div className={styles.emptyEvents}>
               <p>No events yet for this day</p>
-              <Button variant="primary" size="small" onClick={() => onAddEvent(day.id)}>
-                Add First Event
-              </Button>
             </div>
           ) : (
             <div className={styles.events}>{children}</div>

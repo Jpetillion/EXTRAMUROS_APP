@@ -847,6 +847,12 @@ router.get('/:tripId/current-locations', authMiddleware, requireRole('teacher', 
     const maxAgeSeconds = maxAge ? parseInt(maxAge) : 300;
     const locations = await getCurrentStudentLocations(tripId, maxAgeSeconds);
 
+    console.log('📍 SERVER: Returning locations:', JSON.stringify(locations, null, 2));
+    if (locations && locations.length > 0) {
+      console.log('📍 SERVER: First location keys:', Object.keys(locations[0]));
+      console.log('📍 SERVER: First location:', locations[0]);
+    }
+
     res.json(locations);
   } catch (error) {
     console.error('Get current locations error:', error);

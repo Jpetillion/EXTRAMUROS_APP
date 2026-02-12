@@ -999,17 +999,23 @@ export const getCurrentStudentLocations = async (tripId, maxAgeSeconds = 300) =>
   const cutoffTime = Math.floor(Date.now() / 1000) - maxAgeSeconds;
 
   const result = await db.execute({
-    sql: `SELECT
-            student_username,
-            lat,
-            lng,
-            accuracy,
-            last_updated
-          FROM student_locations
+    sql: `SELECT * FROM student_locations
           WHERE trip_id = ? AND last_updated > ?
           ORDER BY last_updated DESC`,
     args: [tripId, cutoffTime]
   });
+
+  console.log('📍 DB getCurrentStudentLocations:');
+  console.log('  - tripId:', tripId);
+  console.log('  - cutoffTime:', cutoffTime);
+  console.log('  - result.rows length:', result.rows?.length);
+
+  if (result.rows && result.rows.length > 0) {
+    console.log('  - First row:', JSON.stringify(result.rows[0], null, 2));
+    console.log('  - First row keys:', Object.keys(result.rows[0]));
+    console.log('  - student_username value:', result.rows[0].student_username);
+    console.log('  - last_updated value:', result.rows[0].last_updated);
+  }
 
   return result.rows;
 };

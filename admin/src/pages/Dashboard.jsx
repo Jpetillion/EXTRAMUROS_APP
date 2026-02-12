@@ -200,28 +200,6 @@ const Dashboard = () => {
             <p className={styles.actionDescription}>View, edit, and organize all trips</p>
           </Card>
 
-          <Card className={styles.actionCard} onClick={() => navigate('/classes')}>
-            <div className={styles.actionIcon} style={{ backgroundColor: '#e0e7ff' }}>
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#6366f1"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="3" width="7" height="7" />
-                <rect x="14" y="3" width="7" height="7" />
-                <rect x="14" y="14" width="7" height="7" />
-                <rect x="3" y="14" width="7" height="7" />
-              </svg>
-            </div>
-            <h3 className={styles.actionTitle}>Manage Classes</h3>
-            <p className={styles.actionDescription}>Create and assign trips to classes</p>
-          </Card>
-
           <Card className={styles.actionCard} onClick={() => navigate('/users')}>
             <div className={styles.actionIcon} style={{ backgroundColor: '#fce7f3' }}>
               <svg

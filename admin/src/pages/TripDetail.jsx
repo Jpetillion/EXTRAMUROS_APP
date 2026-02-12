@@ -595,7 +595,7 @@ const TripDetail = () => {
       {/* Day Management Section */}
       <DayManager
         tripId={id}
-        onUpdate={fetchTrip}
+        onUpdate={fetchTripData}
         onAddEvent={(dayId) => {
           setEditingEvent({ dayId });
           setIsEventModalOpen(true);

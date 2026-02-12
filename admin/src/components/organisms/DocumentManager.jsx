@@ -37,7 +37,15 @@ const DocumentManager = ({ tripId }) => {
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Check file size (Vercel has 4.5MB limit for serverless functions)
+      const maxSize = 4.5 * 1024 * 1024; // 4.5MB in bytes
+      if (file.size > maxSize) {
+        setError(`File is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 4.5MB due to serverless function limitations.`);
+        e.target.value = ''; // Reset input
+        return;
+      }
       setSelectedFile(file);
+      setError(null);
       if (!uploadForm.title) {
         setUploadForm((prev) => ({ ...prev, title: file.name }));
       }
@@ -149,7 +157,7 @@ const DocumentManager = ({ tripId }) => {
             <span className={styles.fileIcon}>📎</span>
             {selectedFile ? selectedFile.name : 'Choose file...'}
           </label>
-          <span className={styles.fileHint}>All file types accepted (max 50MB)</span>
+          <span className={styles.fileHint}>All file types accepted (max 4.5MB)</span>
         </div>
 
         {selectedFile && (
@@ -210,18 +218,18 @@ const DocumentManager = ({ tripId }) => {
                 <div className={styles.docMeta}>
                   <span>{doc.filename}</span>
                   <span>•</span>
-                  <span>{formatFileSize(doc.file_size)}</span>
+                  <span>{formatFileSize(doc.file_size || doc.fileSize || 0)}</span>
                   <span>•</span>
-                  <span>{new Date(doc.created_at * 1000).toLocaleDateString()}</span>
+                  <span>{new Date((doc.created_at || doc.createdAt || Date.now() / 1000) * 1000).toLocaleDateString()}</span>
                 </div>
               </div>
               <div className={styles.docActions}>
-                <Button variant="secondary" size="sm" onClick={() => handleDownload(doc)}>
+                <Button variant="secondary" size="small" onClick={() => handleDownload(doc)}>
                   Download
                 </Button>
                 <Button
                   variant="danger"
-                  size="sm"
+                  size="small"
                   onClick={() => handleDelete(doc.id, doc.title || doc.filename)}
                 >
                   Delete

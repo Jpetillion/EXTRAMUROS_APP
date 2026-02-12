@@ -8,7 +8,7 @@ import Badge from '../components/atoms/Badge';
 import Spinner from '../components/atoms/Spinner';
 import Modal from '../components/molecules/Modal';
 import ConfirmModal from '../components/molecules/ConfirmModal';
-import EventForm from '../components/organisms/EventForm';
+import EventForm from '../components/organisms/EventForm_GALLERIES';
 import DayManager from '../components/organisms/DayManager';
 import DocumentManager from '../components/organisms/DocumentManager';
 import styles from './TripDetail.module.css';

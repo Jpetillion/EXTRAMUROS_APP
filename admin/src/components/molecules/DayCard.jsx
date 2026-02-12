@@ -68,10 +68,10 @@ const DayCard = ({ day, onEdit, onDelete, onMoveUp, onMoveDown, isFirst, isLast,
           >
             {isExpanded ? '▼' : '▶'}
           </button>
-          <Button variant="secondary" size="sm" onClick={() => onEdit(day)}>
+          <Button variant="secondary" size="small" onClick={() => onEdit(day)}>
             Edit
           </Button>
-          <Button variant="danger" size="sm" onClick={handleDelete} loading={isDeleting}>
+          <Button variant="danger" size="small" onClick={handleDelete} loading={isDeleting}>
             Delete
           </Button>
         </div>
@@ -81,7 +81,7 @@ const DayCard = ({ day, onEdit, onDelete, onMoveUp, onMoveDown, isFirst, isLast,
         <div className={styles.expandedContent}>
           <div className={styles.eventsHeader}>
             <h5>Events</h5>
-            <Button variant="primary" size="sm" onClick={() => onAddEvent(day.id)}>
+            <Button variant="primary" size="small" onClick={() => onAddEvent(day.id)}>
               + Add Event
             </Button>
           </div>
@@ -89,7 +89,7 @@ const DayCard = ({ day, onEdit, onDelete, onMoveUp, onMoveDown, isFirst, isLast,
           {eventsCount === 0 ? (
             <div className={styles.emptyEvents}>
               <p>No events yet for this day</p>
-              <Button variant="primary" size="sm" onClick={() => onAddEvent(day.id)}>
+              <Button variant="primary" size="small" onClick={() => onAddEvent(day.id)}>
                 Add First Event
               </Button>
             </div>

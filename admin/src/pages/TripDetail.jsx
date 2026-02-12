@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
-import { tripsAPI, classesAPI, usersAPI } from '../utils/api';
+import { tripsAPI, usersAPI } from '../utils/api';
 import Card from '../components/molecules/Card';
 import Button from '../components/atoms/Button';
 import Badge from '../components/atoms/Badge';
@@ -20,8 +20,6 @@ const TripDetail = () => {
 
   const [trip, setTrip] = useState(null);
   const [events, setEvents] = useState([]);
-  const [classes, setClasses] = useState([]);
-  const [assignedClasses, setAssignedClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [assignedTeachers, setAssignedTeachers] = useState([]);
   const [progressReport, setProgressReport] = useState(null);
@@ -33,18 +31,12 @@ const TripDetail = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const [submittingEvent, setSubmittingEvent] = useState(false);
 
-  // Class assignment modal
-  const [isClassModalOpen, setIsClassModalOpen] = useState(false);
-
   // Teacher assignment modal
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState(null);
 
   // Progress modal
   const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
-
-  // Confirm modal for class removal
-  const [confirmModal, setConfirmModal] = useState({ isOpen: false, classId: null, className: '' });
 
   // Confirm modal for teacher removal
   const [confirmTeacherModal, setConfirmTeacherModal] = useState({ isOpen: false, userId: null, teacherName: '' });
@@ -65,10 +57,6 @@ const TripDetail = () => {
       const eventsResponse = await tripsAPI.getEvents(id);
       setEvents(eventsResponse.data);
 
-      // Fetch assigned classes
-      const classesResponse = await tripsAPI.getClasses(id);
-      setAssignedClasses(classesResponse.data);
-
       // Fetch assigned teachers
       const teachersResponse = await tripsAPI.getTeachers(id);
       setAssignedTeachers(teachersResponse.data);
@@ -78,16 +66,6 @@ const TripDetail = () => {
       showError(err.response?.data?.error || err.message || 'Failed to load trip data');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchAllClasses = async () => {
-    try {
-      const response = await classesAPI.getAll();
-      setClasses(response.data);
-    } catch (err) {
-      console.error('Failed to fetch classes:', err);
-      showError(err.response?.data?.error || err.message || 'Failed to load classes');
     }
   };
 
@@ -263,86 +241,6 @@ const TripDetail = () => {
     }
   };
 
-  // Class assignment handlers
-  const handleOpenClassModal = () => {
-    fetchAllClasses();
-    setIsClassModalOpen(true);
-  };
-
-  const handleAssignClass = async (classId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const headers = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`/api/trips/${id}/classes/${classId}`, {
-        method: 'POST',
-        headers
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'Failed to assign class');
-      }
-
-      success('Class assigned successfully');
-      fetchTripData();
-      setIsClassModalOpen(false);
-    } catch (err) {
-      console.error('Failed to assign class:', err);
-      showError(err.message || 'Failed to assign class');
-    }
-  };
-
-  const handleRemoveClassClick = (classData) => {
-    console.log('Remove class clicked:', classData);
-    const classId = classData.id || classData.classId || classData.class_id;
-    console.log('Extracted classId:', classId);
-    setConfirmModal({
-      isOpen: true,
-      classId: classId,
-      className: classData.name || classData.className || classData.class_name || ''
-    });
-  };
-
-  const handleRemoveClass = async () => {
-    const classId = confirmModal.classId;
-    console.log('Removing class with ID:', classId, 'from trip:', id);
-
-    try {
-      const token = localStorage.getItem('token');
-      const headers = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`/api/trips/${id}/classes/${classId}`, {
-        method: 'DELETE',
-        headers
-      });
-
-      console.log('Delete response status:', response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Delete failed:', errorText);
-        throw new Error('Failed to remove class');
-      }
-
-      // Close the modal first
-      setConfirmModal({ isOpen: false, classId: null, className: '' });
-
-      success('Class removed successfully');
-      fetchTripData();
-    } catch (err) {
-      console.error('Failed to remove class:', err);
-      // Close modal even on error
-      setConfirmModal({ isOpen: false, classId: null, className: '' });
-      showError('Failed to remove class');
-    }
-  };
-
   // Teacher handlers
   const fetchAllTeachers = async () => {
     try {
@@ -433,11 +331,6 @@ const TripDetail = () => {
     );
   }
 
-  // Filter available classes (not already assigned)
-  const availableClasses = classes.filter(
-    cls => !assignedClasses.some(ac => ac.id === cls.id)
-  );
-
   return (
     <div className={styles.tripDetail}>
       <div className={styles.header}>
@@ -469,40 +362,6 @@ const TripDetail = () => {
             </Button>
           </div>
         </div>
-      </Card>
-
-      {/* Assigned Classes Section */}
-      <Card>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Assigned Classes</h2>
-          <Button size="small" onClick={handleOpenClassModal}>
-            Assign to Class
-          </Button>
-        </div>
-
-        {assignedClasses.length === 0 ? (
-          <div className={styles.emptyState}>
-            <p>No classes assigned yet. Assign this trip to classes to make it available to students.</p>
-          </div>
-        ) : (
-          <div className={styles.classList}>
-            {assignedClasses.map((cls) => (
-              <div key={cls.id} className={styles.classItem}>
-                <div>
-                  <strong>{cls.name}</strong>
-                  {cls.schoolYear && <span className={styles.schoolYear}> ({cls.schoolYear})</span>}
-                </div>
-                <Button
-                  size="small"
-                  variant="ghost"
-                  onClick={() => handleRemoveClassClick(cls)}
-                >
-                  Remove
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
       </Card>
 
       {/* Assigned Teachers Section */}
@@ -739,34 +598,6 @@ const TripDetail = () => {
         />
       </Modal>
 
-      {/* Class Assignment Modal */}
-      <Modal
-        isOpen={isClassModalOpen}
-        onClose={() => setIsClassModalOpen(false)}
-        title="Assign Trip to Class"
-        size="small"
-      >
-        <div className={styles.classModalContent}>
-          {availableClasses.length === 0 ? (
-            <p>All classes are already assigned to this trip.</p>
-          ) : (
-            <div className={styles.availableClassesList}>
-              {availableClasses.map((cls) => (
-                <div key={cls.id} className={styles.availableClassItem}>
-                  <div>
-                    <strong>{cls.name}</strong>
-                    {cls.schoolYear && <span className={styles.schoolYear}> ({cls.schoolYear})</span>}
-                  </div>
-                  <Button size="small" onClick={() => handleAssignClass(cls.id)}>
-                    Assign
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </Modal>
-
       {/* Teacher Assignment Modal */}
       <Modal
         isOpen={isTeacherModalOpen}
@@ -863,17 +694,6 @@ const TripDetail = () => {
           </div>
         )}
       </Modal>
-
-      {/* Confirm Modal for Class Removal */}
-      <ConfirmModal
-        isOpen={confirmModal.isOpen}
-        onClose={() => setConfirmModal({ isOpen: false, classId: null, className: '' })}
-        onConfirm={handleRemoveClass}
-        title="Remove Class"
-        message={`Are you sure you want to remove ${confirmModal.className ? `"${confirmModal.className}"` : 'this class'} from the trip?`}
-        confirmText="Remove"
-        variant="danger"
-      />
 
       {/* Confirm Modal for Teacher Removal */}
       <ConfirmModal

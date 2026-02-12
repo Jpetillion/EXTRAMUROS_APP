@@ -12,43 +12,24 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export function Home() {
   const navigate = useNavigate();
-  const { selectedClass, changeClass } = useAuth();
   const { downloadedTrips } = useTripContext();
   const { isOnline } = useOfflineContext();
 
-  const [classes, setClasses] = useState([]);
-  const [loadingClasses, setLoadingClasses] = useState(true);
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState(
+    localStorage.getItem('student_username') || ''
+  );
+  const [inputValue, setInputValue] = useState('');
 
-  useEffect(() => {
-    fetchClasses();
-  }, []);
-
-  const fetchClasses = async () => {
-    try {
-      setLoadingClasses(true);
-      const response = await fetch(`${API_URL}/classes`);
-
-      if (!response.ok) {
-        throw new Error('Failed to load classes');
-      }
-
-      const data = await response.json();
-      setClasses(data);
-    } catch (err) {
-      console.error('Failed to fetch classes:', err);
-      setError('Kon klassen niet laden');
-    } finally {
-      setLoadingClasses(false);
+  const handleUsernameSubmit = (e) => {
+    e.preventDefault();
+    if (inputValue.trim()) {
+      localStorage.setItem('student_username', inputValue.trim());
+      setUsername(inputValue.trim());
     }
   };
 
-  const handleSelectClass = (classData) => {
-    changeClass(classData);
-  };
-
-  // Show class selection if no class is selected
-  if (!selectedClass) {
+  // Show username prompt if no username is set
+  if (!username) {
     return (
       <div className="home">
         <div className="home__header">
@@ -65,51 +46,29 @@ export function Home() {
         <div className="home__container">
           <div className="home__class-selection">
             <div className="home__class-selection-header">
-              <Icon name="users" size="xlarge" color="var(--color-primary)" />
-              <h2>Selecteer je klas</h2>
-              <p>Kies je klas om beschikbare uitstappen te bekijken</p>
+              <Icon name="user" size="xlarge" color="var(--color-primary)" />
+              <h2>Welkom bij Extra Muros</h2>
+              <p>Voer je naam in om te beginnen</p>
             </div>
 
-            {loadingClasses ? (
-              <div className="home__loading">
-                <Icon name="spinner" size="large" />
-                <p>Klassen laden...</p>
-              </div>
-            ) : error ? (
-              <div className="home__error">
-                <Icon name="warning" size="medium" />
-                <p>{error}</p>
-                <Button variant="secondary" onClick={fetchClasses}>
-                  Opnieuw proberen
-                </Button>
-              </div>
-            ) : classes.length === 0 ? (
-              <div className="home__empty">
-                <Icon name="info" size="medium" />
-                <p>Geen klassen beschikbaar</p>
-              </div>
-            ) : (
-              <div className="home__class-list">
-                {classes.map((classData) => (
-                  <button
-                    key={classData.id}
-                    className="home__class-card"
-                    onClick={() => handleSelectClass(classData)}
-                  >
-                    <div className="home__class-card-icon">
-                      <Icon name="users" size="large" color="var(--color-primary)" />
-                    </div>
-                    <div className="home__class-card-content">
-                      <h3>{classData.name}</h3>
-                      {classData.schoolYear && (
-                        <p className="home__class-card-year">{classData.schoolYear}</p>
-                      )}
-                    </div>
-                    <Icon name="chevron-right" size="medium" color="var(--color-gray-400)" />
-                  </button>
-                ))}
-              </div>
-            )}
+            <form onSubmit={handleUsernameSubmit} className="home__username-form">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Je volledige naam..."
+                className="home__username-input"
+                autoFocus
+              />
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={!inputValue.trim()}
+                style={{ width: '100%' }}
+              >
+                Doorgaan
+              </Button>
+            </form>
           </div>
         </div>
       </div>
@@ -148,18 +107,18 @@ export function Home() {
       </div>
 
       <div className="home__container">
-        {/* Show selected class with improved styling */}
+        {/* Show username badge */}
         <div className="home__selected-class">
           <div className="home__class-badge">
             <div className="home__class-badge-icon">
-              <Icon name="users" size="medium" color="white" />
+              <Icon name="user" size="medium" color="white" />
             </div>
-            <span className="home__class-badge-text">{selectedClass.name}</span>
+            <span className="home__class-badge-text">{username}</span>
           </div>
         </div>
 
         <div className="home__hero">
-          <h2 className="home__hero-title">Welkom terug!</h2>
+          <h2 className="home__hero-title">Welkom terug, {username.split(' ')[0]}!</h2>
           <p className="home__hero-description">
             Bekijk en download educatieve uitstappen. Alle content is beschikbaar, zelfs zonder internetverbinding.
           </p>

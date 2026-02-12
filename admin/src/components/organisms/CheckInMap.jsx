@@ -150,8 +150,8 @@ const CheckInMap = ({ tripId }) => {
   const positions = checkIns.map(location => ({
     lat: location.lat,
     lng: location.lng,
-    username: location.student_username || 'Unknown',
-    timestamp: location.last_updated,
+    username: location.studentUsername || 'Unknown',  // camelCase from Turso!
+    timestamp: location.lastUpdated,                   // camelCase from Turso!
     accuracy: location.accuracy
   }));
 
@@ -206,11 +206,11 @@ const CheckInMap = ({ tripId }) => {
           {checkIns.slice(0, 10).map((location, index) => (
             <div key={index} className={styles.checkInItem}>
               <div className={styles.checkInUser}>
-                <strong>{location.student_username || 'Unknown Student'}</strong>
+                <strong>{location.studentUsername || 'Unknown Student'}</strong>
               </div>
               <div className={styles.checkInDetails}>
                 <span className={styles.checkInTime}>
-                  Last seen: {formatTimestamp(location.last_updated)}
+                  Last seen: {formatTimestamp(location.lastUpdated)}
                 </span>
               </div>
             </div>

@@ -19,7 +19,7 @@ import './Settings.css';
 
 export function Settings() {
   const navigate = useNavigate();
-  const { userEmail, selectedClass, logout } = useAuth();
+  const { logout } = useAuth();
   const { downloadedTrips, refreshTrips } = useTripContext();
   const { isOnline, isSyncing, lastSyncTime } = useOfflineContext();
   const { storageInfo, refresh: refreshStorage } = useStorage();
@@ -28,6 +28,8 @@ export function Settings() {
   const { confirm, confirmState, handleClose } = useConfirm();
   const [isClearing, setIsClearing] = useState(false);
   const { isInstallable, isInstalled, installApp } = usePWAInstall();
+
+  const username = localStorage.getItem('student_username') || 'Anonymous';
 
   useEffect(() => {
     refreshStorage();
@@ -96,20 +98,6 @@ export function Settings() {
     }
   };
 
-  const handleChangeClass = async () => {
-    const confirmed = await confirm({
-      title: 'Klas Wijzigen',
-      message: 'Weet je zeker dat je van klas wilt veranderen? Je moet een nieuwe klas selecteren.',
-      confirmText: 'Klas Wijzigen',
-      variant: 'primary',
-    });
-
-    if (!confirmed) return;
-
-    logout();
-    navigate('/login');
-  };
-
   const handleLogout = async () => {
     const confirmed = await confirm({
       title: 'Uitloggen',
@@ -120,8 +108,10 @@ export function Settings() {
 
     if (!confirmed) return;
 
+    // Clear username
+    localStorage.removeItem('student_username');
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -133,26 +123,11 @@ export function Settings() {
           <h3 className="settings__section-title">Account</h3>
           <div className="settings__card">
             <div className="settings__row">
-              <span className="settings__label">Email</span>
-              <span className="settings__value">{userEmail}</span>
-            </div>
-
-            <div className="settings__row">
-              <span className="settings__label">Klas</span>
-              <Badge variant="primary">{selectedClass?.name || 'Onbekend'}</Badge>
+              <span className="settings__label">Gebruikersnaam</span>
+              <span className="settings__value">{username}</span>
             </div>
 
             <div className="settings__actions">
-              <Button
-                variant="secondary"
-                fullWidth
-                onClick={handleChangeClass}
-              >
-                <Icon name="users" size="medium" />
-                {' '}
-                Klas Wijzigen
-              </Button>
-
               <Button
                 variant="danger"
                 fullWidth

@@ -14,7 +14,7 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export function BrowseTrips() {
   const navigate = useNavigate();
-  const { selectedClass, userEmail } = useAuth();
+  const { userEmail } = useAuth();
   const { isTripDownloaded, refreshTrips } = useTripContext();
   const { success, error: showError } = useToast();
 
@@ -24,18 +24,16 @@ export function BrowseTrips() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (selectedClass) {
-      fetchAvailableTrips();
-    }
-  }, [selectedClass]);
+    fetchAvailableTrips();
+  }, []);
 
   const fetchAvailableTrips = async () => {
     try {
       setLoading(true);
       setError('');
 
-      // Fetch trips for selected class
-      const response = await fetch(`${API_URL}/classes/${selectedClass.id}/trips?published=true`);
+      // Fetch all published trips
+      const response = await fetch(`${API_URL}/trips?published=true`);
 
       if (!response.ok) {
         throw new Error('Failed to load trips');
@@ -152,13 +150,13 @@ export function BrowseTrips() {
       );
 
       // Save trip with events, teachers, and media to IndexedDB
+      const username = localStorage.getItem('student_username') || 'anonymous';
       const tripToSave = {
         ...tripData,
         events: eventsWithMedia,
         teachers: teachers,
         downloadedAt: Date.now(),
-        studentEmail: userEmail || 'anonymous',
-        classId: selectedClass?.id || null
+        studentUsername: username
       };
 
       console.log('=== TRIP DOWNLOAD SUMMARY ===');
@@ -214,17 +212,6 @@ export function BrowseTrips() {
       <Header title="Browse Trips" showBack={true} />
 
       <div className="browse-trips__container">
-        {selectedClass && (
-          <div className="browse-trips__class-badge">
-            <div className="browse-trips__class-badge-inner">
-              <div className="browse-trips__class-badge-icon">
-                <Icon name="users" size="medium" color="white" />
-              </div>
-              <span className="browse-trips__class-badge-text">{selectedClass.name}</span>
-            </div>
-          </div>
-        )}
-
         {error && (
           <div className="browse-trips__error">
             <Icon name="warning" size="medium" />
@@ -239,7 +226,7 @@ export function BrowseTrips() {
           <div className="browse-trips__empty">
             <Icon name="map" size="xlarge" color="var(--color-gray-400)" />
             <h3>Geen Uitstappen Beschikbaar</h3>
-            <p>Er zijn nog geen gepubliceerde uitstappen voor je klas.</p>
+            <p>Er zijn nog geen gepubliceerde uitstappen.</p>
           </div>
         )}
 

@@ -95,6 +95,26 @@ router.post('/trips/:tripId/days', authMiddleware, requireRole('teacher', 'admin
   }
 });
 
+// Reorder days (teachers/admins only) - MUST come before /:dayId routes
+router.put('/trips/:tripId/days/reorder', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
+  try {
+    const { tripId } = req.params;
+    const { dayIds } = req.body;
+
+    if (!Array.isArray(dayIds) || dayIds.length === 0) {
+      return res.status(400).json({ error: 'dayIds must be a non-empty array' });
+    }
+
+    await reorderTripDays(tripId, dayIds);
+
+    const days = await getTripDaysByTripId(tripId);
+    res.json(days);
+  } catch (error) {
+    console.error('Reorder days error:', error);
+    res.status(500).json({ error: 'Failed to reorder days' });
+  }
+});
+
 // Update day (teachers/admins only)
 router.put('/trips/:tripId/days/:dayId', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
   try {
@@ -143,26 +163,6 @@ router.delete('/trips/:tripId/days/:dayId', authMiddleware, requireRole('teacher
   } catch (error) {
     console.error('Delete day error:', error);
     res.status(500).json({ error: 'Failed to delete day' });
-  }
-});
-
-// Reorder days (teachers/admins only)
-router.put('/trips/:tripId/days/reorder', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
-  try {
-    const { tripId } = req.params;
-    const { dayIds } = req.body;
-
-    if (!Array.isArray(dayIds) || dayIds.length === 0) {
-      return res.status(400).json({ error: 'dayIds must be a non-empty array' });
-    }
-
-    await reorderTripDays(tripId, dayIds);
-
-    const days = await getTripDaysByTripId(tripId);
-    res.json(days);
-  } catch (error) {
-    console.error('Reorder days error:', error);
-    res.status(500).json({ error: 'Failed to reorder days' });
   }
 });
 

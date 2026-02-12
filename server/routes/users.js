@@ -105,6 +105,32 @@ router.delete('/:id', authMiddleware, requireRole('admin'), async (req, res) => 
       return res.status(403).json({ error: 'Cannot delete your own account' });
     }
 
+    // Check if user has created any trips
+    const tripsResult = await db.execute({
+      sql: 'SELECT COUNT(*) as count FROM trips WHERE created_by = ?',
+      args: [req.params.id]
+    });
+    const tripCount = tripsResult.rows[0].count;
+
+    if (tripCount > 0) {
+      return res.status(400).json({
+        error: `Cannot delete user who has created ${tripCount} trip(s). Please reassign or delete their trips first.`
+      });
+    }
+
+    // Check if user has uploaded any documents
+    const docsResult = await db.execute({
+      sql: 'SELECT COUNT(*) as count FROM trip_documents WHERE uploaded_by = ?',
+      args: [req.params.id]
+    });
+    const docCount = docsResult.rows[0].count;
+
+    if (docCount > 0) {
+      return res.status(400).json({
+        error: `Cannot delete user who has uploaded ${docCount} document(s). Please delete their documents first.`
+      });
+    }
+
     await deleteUser(req.params.id);
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
@@ -113,7 +139,7 @@ router.delete('/:id', authMiddleware, requireRole('admin'), async (req, res) => 
     // Check if it's a foreign key constraint error
     if (error.message && (error.message.includes('FOREIGN KEY') || error.message.includes('constraint'))) {
       return res.status(400).json({
-        error: 'Cannot delete user who has created trips or uploaded documents. Please reassign or delete their content first.'
+        error: 'Cannot delete user due to related content. Please contact support.'
       });
     }
 

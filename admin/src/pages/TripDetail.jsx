@@ -23,9 +23,7 @@ const TripDetail = () => {
   const [events, setEvents] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [assignedTeachers, setAssignedTeachers] = useState([]);
-  const [progressReport, setProgressReport] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadingProgress, setLoadingProgress] = useState(false);
 
   // Event modal
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
@@ -35,9 +33,6 @@ const TripDetail = () => {
   // Teacher assignment modal
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState(null);
-
-  // Progress modal
-  const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
 
   // Confirm modal for teacher removal
   const [confirmTeacherModal, setConfirmTeacherModal] = useState({ isOpen: false, userId: null, teacherName: '' });
@@ -67,24 +62,6 @@ const TripDetail = () => {
       showError(err.response?.data?.error || err.message || 'Failed to load trip data');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchProgressReport = async () => {
-    try {
-      setLoadingProgress(true);
-      const response = await fetch(`/api/stats/trips/${id}/progress`, {
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to fetch progress report');
-      const data = await response.json();
-      setProgressReport(data);
-      setIsProgressModalOpen(true);
-    } catch (err) {
-      console.error('Failed to fetch progress report:', err);
-      showError('Failed to load progress report');
-    } finally {
-      setLoadingProgress(false);
     }
   };
 
@@ -509,73 +486,6 @@ const TripDetail = () => {
             </div>
           )}
         </div>
-      </Modal>
-
-      {/* Progress Report Modal */}
-      <Modal
-        isOpen={isProgressModalOpen}
-        onClose={() => setIsProgressModalOpen(false)}
-        title="Student Progress Report"
-        size="large"
-      >
-        {progressReport && (
-          <div className={styles.progressReport}>
-            <div className={styles.progressOverview}>
-              <div className={styles.statCard}>
-                <div className={styles.statValue}>{progressReport.totalStudents}</div>
-                <div className={styles.statLabel}>Total Students</div>
-              </div>
-              <div className={styles.statCard}>
-                <div className={styles.statValue}>{progressReport.totalEvents}</div>
-                <div className={styles.statLabel}>Total Events</div>
-              </div>
-              <div className={styles.statCard}>
-                <div className={styles.statValue}>{progressReport.averageCompletion}%</div>
-                <div className={styles.statLabel}>Average Completion</div>
-              </div>
-            </div>
-
-            <div className={styles.progressSection}>
-              <h3>Event Completion Stats</h3>
-              <div className={styles.eventStatsList}>
-                {progressReport.eventStats.map((stat) => (
-                  <div key={stat.eventId} className={styles.eventStat}>
-                    <div className={styles.eventStatTitle}>{stat.eventTitle}</div>
-                    <div className={styles.eventStatBar}>
-                      <div
-                        className={styles.eventStatFill}
-                        style={{ width: `${stat.completionPercentage}%` }}
-                      />
-                    </div>
-                    <div className={styles.eventStatLabel}>
-                      {stat.studentsCompleted} / {progressReport.totalStudents} students ({stat.completionPercentage}%)
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className={styles.progressSection}>
-              <h3>Student Progress Details</h3>
-              <div className={styles.studentProgressList}>
-                {progressReport.studentProgress.map((student) => (
-                  <div key={student.email} className={styles.studentProgressItem}>
-                    <div className={styles.studentEmail}>{student.email}</div>
-                    <div className={styles.studentProgressBar}>
-                      <div
-                        className={styles.studentProgressFill}
-                        style={{ width: `${student.progressPercentage}%` }}
-                      />
-                    </div>
-                    <div className={styles.studentProgressLabel}>
-                      {student.completedEvents} / {student.totalEvents} events ({student.progressPercentage}%)
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </Modal>
 
       {/* Confirm Modal for Teacher Removal */}

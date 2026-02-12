@@ -354,3 +354,12 @@
 .home__username-input:focus {
   border-color: var(--color-primary);
 }
+
+.home__privacy-notice {
+  font-size: 0.75rem;
+  color: var(--color-gray-600);
+  text-align: center;
+  margin: 0.75rem 0;
+  line-height: 1.4;
+  font-style: italic;
+}

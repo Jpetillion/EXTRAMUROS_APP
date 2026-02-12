@@ -31,8 +31,8 @@ const Dashboard = () => {
         totalTrips: 0,
         publishedTrips: 0,
         draftTrips: 0,
-        totalModules: 0,
-        totalContent: 0,
+        totalDays: 0,
+        totalEvents: 0,
       });
     } finally {
       setLoading(false);
@@ -143,8 +143,8 @@ const Dashboard = () => {
               </svg>
             </div>
             <div className={styles.statInfo}>
-              <p className={styles.statLabel}>Total Modules</p>
-              <p className={styles.statValue}>{stats?.totalModules || 0}</p>
+              <p className={styles.statLabel}>Total Days</p>
+              <p className={styles.statValue}>{stats?.totalDays || 0}</p>
             </div>
           </div>
         </Card>
@@ -170,8 +170,8 @@ const Dashboard = () => {
               </svg>
             </div>
             <div className={styles.statInfo}>
-              <p className={styles.statLabel}>Total Content</p>
-              <p className={styles.statValue}>{stats?.totalContent || 0}</p>
+              <p className={styles.statLabel}>Total Events</p>
+              <p className={styles.statValue}>{stats?.totalEvents || 0}</p>
             </div>
           </div>
         </Card>

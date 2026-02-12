@@ -28,6 +28,9 @@ import {
   updateTripDocument,
   deleteTripDocument,
   recordCheckIn,
+  updateStudentLocation,
+  getCurrentStudentLocations,
+  removeStudentLocation,
   getCheckIns
 } from '../models/db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
@@ -805,6 +808,62 @@ router.get('/:tripId/check-ins', authMiddleware, requireRole('teacher', 'admin')
   } catch (error) {
     console.error('Get check-ins error:', error);
     res.status(500).json({ error: 'Failed to fetch check-ins' });
+  }
+});
+
+// ============= LOCATION TRACKING ROUTES (Automatic) =============
+
+// Update student location (public - no auth required for students)
+router.post('/:tripId/location', async (req, res) => {
+  try {
+    const { tripId } = req.params;
+    const { username, lat, lng, accuracy } = req.body;
+
+    if (!username || !lat || !lng) {
+      return res.status(400).json({ error: 'username, lat, and lng are required' });
+    }
+
+    await updateStudentLocation({
+      tripId,
+      studentUsername: username,
+      lat: parseFloat(lat),
+      lng: parseFloat(lng),
+      accuracy: accuracy ? parseFloat(accuracy) : null
+    });
+
+    res.json({ success: true, message: 'Location updated' });
+  } catch (error) {
+    console.error('Update location error:', error);
+    res.status(500).json({ error: 'Failed to update location' });
+  }
+});
+
+// Get current student locations for a trip (teachers/admins only)
+router.get('/:tripId/current-locations', authMiddleware, requireRole('teacher', 'admin'), async (req, res) => {
+  try {
+    const { tripId } = req.params;
+    const { maxAge } = req.query; // Optional: max age in seconds (default 300 = 5 minutes)
+
+    const maxAgeSeconds = maxAge ? parseInt(maxAge) : 300;
+    const locations = await getCurrentStudentLocations(tripId, maxAgeSeconds);
+
+    res.json(locations);
+  } catch (error) {
+    console.error('Get current locations error:', error);
+    res.status(500).json({ error: 'Failed to fetch current locations' });
+  }
+});
+
+// Remove student location when they leave trip (public)
+router.delete('/:tripId/location/:username', async (req, res) => {
+  try {
+    const { tripId, username } = req.params;
+
+    await removeStudentLocation(tripId, username);
+    res.json({ success: true, message: 'Location removed' });
+  } catch (error) {
+    console.error('Remove location error:', error);
+    res.status(500).json({ error: 'Failed to remove location' });
   }
 });
 

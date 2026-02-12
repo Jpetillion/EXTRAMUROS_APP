@@ -57,18 +57,18 @@ const CheckInMap = ({ tripId }) => {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`/api/trips/${tripId}/check-ins`, {
+      const response = await fetch(`/api/trips/${tripId}/current-locations?maxAge=300`, {
         headers
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch check-ins');
+        throw new Error('Failed to fetch student locations');
       }
 
       const data = await response.json();
       setCheckIns(data);
     } catch (err) {
-      console.error('Error fetching check-ins:', err);
+      console.error('Error fetching student locations:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -108,28 +108,27 @@ const CheckInMap = ({ tripId }) => {
   if (checkIns.length === 0) {
     return (
       <div className={styles.emptyContainer}>
-        <p>No check-ins yet for this trip.</p>
+        <p>No students currently viewing this trip.</p>
         <p className={styles.hint}>
-          Students can check in via the mobile app when they're at event locations.
+          Student locations are tracked automatically when they open the trip in the mobile app.
         </p>
       </div>
     );
   }
 
   // Get unique positions for markers
-  const positions = checkIns.map(checkIn => ({
-    lat: checkIn.check_in_lat || checkIn.checkInLat,
-    lng: checkIn.check_in_lng || checkIn.checkInLng,
-    username: checkIn.username || checkIn.student_username,
-    eventTitle: checkIn.event_title || checkIn.eventTitle,
-    timestamp: checkIn.check_in_timestamp || checkIn.checkInTimestamp,
-    accuracy: checkIn.check_in_accuracy || checkIn.checkInAccuracy
+  const positions = checkIns.map(location => ({
+    lat: location.lat,
+    lng: location.lng,
+    username: location.student_username,
+    timestamp: location.last_updated,
+    accuracy: location.accuracy
   }));
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h3>Student Check-Ins ({checkIns.length})</h3>
+        <h3>Current Student Locations ({checkIns.length})</h3>
         <button onClick={fetchCheckIns} className={styles.refreshButton}>
           🔄 Refresh
         </button>
@@ -156,8 +155,7 @@ const CheckInMap = ({ tripId }) => {
               <Popup>
                 <div className={styles.popup}>
                   <strong>{pos.username}</strong>
-                  <p className={styles.popupEvent}>{pos.eventTitle}</p>
-                  <p className={styles.popupTime}>{formatTimestamp(pos.timestamp)}</p>
+                  <p className={styles.popupTime}>Last seen: {formatTimestamp(pos.timestamp)}</p>
                   {pos.accuracy && (
                     <p className={styles.popupAccuracy}>
                       Accuracy: ±{Math.round(pos.accuracy)}m
@@ -171,19 +169,16 @@ const CheckInMap = ({ tripId }) => {
       </div>
 
       <div className={styles.checkInList}>
-        <h4>Recent Check-Ins</h4>
+        <h4>Active Students</h4>
         <div className={styles.list}>
-          {checkIns.slice(0, 10).map((checkIn, index) => (
+          {checkIns.slice(0, 10).map((location, index) => (
             <div key={index} className={styles.checkInItem}>
               <div className={styles.checkInUser}>
-                <strong>{checkIn.username || checkIn.student_username}</strong>
+                <strong>{location.student_username}</strong>
               </div>
               <div className={styles.checkInDetails}>
-                <span className={styles.checkInEvent}>
-                  {checkIn.event_title || checkIn.eventTitle}
-                </span>
                 <span className={styles.checkInTime}>
-                  {formatTimestamp(checkIn.check_in_timestamp || checkIn.checkInTimestamp)}
+                  Last seen: {formatTimestamp(location.last_updated)}
                 </span>
               </div>
             </div>

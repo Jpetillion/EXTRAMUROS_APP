@@ -60,6 +60,9 @@ export function Home() {
                 className="home__username-input"
                 autoFocus
               />
+              <p className="home__privacy-notice">
+                Bij gebruik van deze app ben je akkoord dat jouw locatie gedeeld kan worden.
+              </p>
               <Button
                 type="submit"
                 variant="primary"

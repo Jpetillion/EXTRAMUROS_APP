@@ -11,6 +11,7 @@ import { AudioPlaylist } from '../components/molecules/AudioPlaylist.jsx';
 import { VideoGallery } from '../components/molecules/VideoGallery.jsx';
 import { getTrip, getModulesByTrip, getAllProgress } from '../utils/storage.js';
 import { formatDate } from '../utils/helpers.js';
+import { useLocationTracking } from '../hooks/useLocationTracking.js';
 import './TripView.css';
 
 // Helper function to convert YouTube URLs to embed format
@@ -79,6 +80,12 @@ export function TripView() {
   const [modules, setModules] = useState([]);
   const [completedContents, setCompletedContents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Get username for location tracking
+  const username = localStorage.getItem('student_username') || '';
+
+  // Start automatic location tracking when viewing this trip
+  useLocationTracking(tripId, username, !!username);
 
   useEffect(() => {
     loadTripData();

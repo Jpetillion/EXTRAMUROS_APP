@@ -971,3 +971,62 @@ export const getCheckIns = async (tripId, eventId = null) => {
   const result = await db.execute({ sql, args });
   return result.rows;
 };
+
+// ========================================
+// STUDENT LOCATION TRACKING (Automatic/Continuous)
+// ========================================
+
+export const updateStudentLocation = async ({ tripId, studentUsername, lat, lng, accuracy }) => {
+  const id = randomUUID();
+  const now = Math.floor(Date.now() / 1000);
+
+  // Upsert: insert or replace existing location
+  await db.execute({
+    sql: `INSERT INTO student_locations (id, trip_id, student_username, lat, lng, accuracy, last_updated)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(trip_id, student_username)
+          DO UPDATE SET
+            lat = excluded.lat,
+            lng = excluded.lng,
+            accuracy = excluded.accuracy,
+            last_updated = excluded.last_updated`,
+    args: [id, tripId, studentUsername, lat, lng, accuracy || null, now]
+  });
+};
+
+export const getCurrentStudentLocations = async (tripId, maxAgeSeconds = 300) => {
+  // Only return locations updated in the last 5 minutes (default)
+  const cutoffTime = Math.floor(Date.now() / 1000) - maxAgeSeconds;
+
+  const result = await db.execute({
+    sql: `SELECT
+            student_username,
+            lat,
+            lng,
+            accuracy,
+            last_updated
+          FROM student_locations
+          WHERE trip_id = ? AND last_updated > ?
+          ORDER BY last_updated DESC`,
+    args: [tripId, cutoffTime]
+  });
+
+  return result.rows;
+};
+
+export const removeStudentLocation = async (tripId, studentUsername) => {
+  await db.execute({
+    sql: 'DELETE FROM student_locations WHERE trip_id = ? AND student_username = ?',
+    args: [tripId, studentUsername]
+  });
+};
+
+export const cleanupStaleLocations = async (maxAgeSeconds = 600) => {
+  // Remove locations older than 10 minutes (default)
+  const cutoffTime = Math.floor(Date.now() / 1000) - maxAgeSeconds;
+
+  await db.execute({
+    sql: 'DELETE FROM student_locations WHERE last_updated < ?',
+    args: [cutoffTime]
+  });
+};

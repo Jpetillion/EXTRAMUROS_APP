@@ -734,7 +734,7 @@ router.post('/:tripId/events/:eventId/check-in', async (req, res) => {
     const { eventId } = req.params;
     const { email, username, lat, lng, accuracy } = req.body;
 
-    if (!validateRequired({ lat, lng })) {
+    if (lat == null || lng == null) {
       return res.status(400).json({ error: 'GPS coordinates (lat, lng) are required' });
     }
 

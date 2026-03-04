@@ -19,7 +19,6 @@ import {
   getTripEventById
 } from '../models/db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
-import { validateRequired } from '../utils/validators.js';
 
 const router = express.Router();
 
@@ -89,7 +88,7 @@ router.post('/events/:eventId/photos', authMiddleware, requireRole('teacher', 'a
       return res.status(400).json({ error: 'Photo file is required' });
     }
 
-    if (!validateRequired({ title })) {
+    if (!title?.trim()) {
       return res.status(400).json({ error: 'Title is required' });
     }
 
@@ -212,7 +211,7 @@ router.post('/events/:eventId/audio', authMiddleware, requireRole('teacher', 'ad
       return res.status(400).json({ error: 'Audio file is required' });
     }
 
-    if (!validateRequired({ title })) {
+    if (!title?.trim()) {
       return res.status(400).json({ error: 'Title is required' });
     }
 
@@ -330,7 +329,7 @@ router.post('/events/:eventId/videos', authMiddleware, requireRole('teacher', 'a
     const { eventId } = req.params;
     const { title, videoUrl, thumbnailUrl, orderIndex } = req.body;
 
-    if (!validateRequired({ title, videoUrl })) {
+    if (!title?.trim() || !videoUrl?.trim()) {
       return res.status(400).json({ error: 'Title and videoUrl are required' });
     }
 

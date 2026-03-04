@@ -1,10 +1,81 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Button from '../atoms/Button';
 import styles from './DayCard.module.css';
+
+const COLOR_OPTIONS = [
+  '#3b82f6', // blue
+  '#22c55e', // green
+  '#ef4444', // red
+  '#f97316', // orange
+  '#a855f7', // purple
+  '#ec4899', // pink
+  '#eab308', // yellow
+  '#14b8a6', // teal
+  '#6366f1', // indigo
+  '#6b7280', // gray
+];
 
 const DayCard = ({ day, onEdit, onDelete, onMoveUp, onMoveDown, isFirst, isLast, onAddEvent, children }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [dotColor, setDotColor] = useState(
+    () => localStorage.getItem(`day-color-${day.id}`) || '#3b82f6'
+  );
+  const [colorMenu, setColorMenu] = useState(null);
+  const menuRef = useRef(null);
+  const longPressTimer = useRef(null);
+
+  useEffect(() => {
+    if (!colorMenu) return;
+    const handleClose = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setColorMenu(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClose);
+    document.addEventListener('touchstart', handleClose, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handleClose);
+      document.removeEventListener('touchstart', handleClose);
+    };
+  }, [colorMenu]);
+
+  const openColorMenu = (x, y) => {
+    // Clamp menu position so it stays within the viewport
+    const menuWidth = 160;
+    const menuHeight = 100;
+    const clampedX = Math.min(x, window.innerWidth - menuWidth - 8);
+    const clampedY = Math.min(y, window.innerHeight - menuHeight - 8);
+    setColorMenu({ x: Math.max(8, clampedX), y: Math.max(8, clampedY) });
+  };
+
+  const handleDotContextMenu = (e) => {
+    e.preventDefault();
+    openColorMenu(e.clientX, e.clientY);
+  };
+
+  const handleTouchStart = (e) => {
+    const touch = e.touches[0];
+    const x = touch.clientX;
+    const y = touch.clientY;
+    longPressTimer.current = setTimeout(() => {
+      openColorMenu(x, y);
+    }, 500);
+  };
+
+  const handleTouchEnd = () => {
+    clearTimeout(longPressTimer.current);
+  };
+
+  const handleTouchMove = () => {
+    clearTimeout(longPressTimer.current);
+  };
+
+  const handleSelectColor = (color) => {
+    setDotColor(color);
+    localStorage.setItem(`day-color-${day.id}`, color);
+    setColorMenu(null);
+  };
 
   const handleDelete = async () => {
     const eventsCount = day.events?.length || 0;
@@ -29,7 +100,17 @@ const DayCard = ({ day, onEdit, onDelete, onMoveUp, onMoveDown, isFirst, isLast,
     <div className={styles.dayCard}>
       <div className={styles.header}>
         <div className={styles.orderIndex}>
-          <span className={styles.number}>{day.day_number}</span>
+          <span
+            className={styles.number}
+            style={{ background: dotColor }}
+            onContextMenu={handleDotContextMenu}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onTouchMove={handleTouchMove}
+            title="Rechtermuisknop om kleur te wijzigen"
+          >
+            {day.day_number}
+          </span>
           <div className={styles.orderControls}>
             <button
               className={styles.orderButton}
@@ -76,6 +157,28 @@ const DayCard = ({ day, onEdit, onDelete, onMoveUp, onMoveDown, isFirst, isLast,
           </Button>
         </div>
       </div>
+
+      {colorMenu && (
+        <div
+          ref={menuRef}
+          className={styles.colorMenu}
+          style={{ top: colorMenu.y, left: colorMenu.x }}
+        >
+          <p className={styles.colorMenuLabel}>Kies kleur</p>
+          <div className={styles.colorSwatches}>
+            {COLOR_OPTIONS.map((color) => (
+              <button
+                key={color}
+                type="button"
+                className={styles.colorSwatch}
+                style={{ background: color, outline: dotColor === color ? `3px solid ${color}` : 'none', outlineOffset: '2px' }}
+                onClick={() => handleSelectColor(color)}
+                title={color}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {isExpanded && (
         <div className={styles.expandedContent}>

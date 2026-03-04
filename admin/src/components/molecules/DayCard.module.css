@@ -36,6 +36,53 @@
   border-radius: 50%;
   font-weight: bold;
   font-size: 1.125rem;
+  cursor: context-menu;
+  user-select: none;
+  transition: opacity 0.15s;
+}
+
+.number:hover {
+  opacity: 0.85;
+}
+
+.colorMenu {
+  position: fixed;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.5rem 0.625rem 0.625rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  min-width: 140px;
+}
+
+.colorMenuLabel {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.colorSwatches {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.375rem;
+}
+
+.colorSwatch {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.1s;
+  padding: 0;
+}
+
+.colorSwatch:hover {
+  transform: scale(1.2);
 }
 
 .orderControls {

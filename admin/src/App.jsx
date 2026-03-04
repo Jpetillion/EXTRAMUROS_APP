@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import Login from './pages/Login';
@@ -26,6 +27,7 @@ const PrivateRoute = ({ children }) => {
 
 const App = () => {
   const { isAuthenticated } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (!isAuthenticated) {
     return (
@@ -38,9 +40,9 @@ const App = () => {
 
   return (
     <div className={styles.app}>
-      <Header />
+      <Header onMenuToggle={() => setMobileMenuOpen((o) => !o)} />
       <div className={styles.container}>
-        <Sidebar />
+        <Sidebar isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
         <main className={styles.main}>
           <Routes>
             <Route

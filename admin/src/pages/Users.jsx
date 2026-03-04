@@ -240,16 +240,16 @@ const Users = () => {
             <tbody>
               {users.map((user) => (
                 <tr key={user.id} className={styles.tableRow}>
-                  <td className={styles.userName}>
+                  <td data-label="Naam" className={styles.userName}>
                     {user.firstName} {user.lastName}
                   </td>
-                  <td>{user.email}</td>
-                  <td>
+                  <td data-label="Email">{user.email}</td>
+                  <td data-label="Rol">
                     <Badge variant={user.role === 'admin' ? 'primary' : 'info'}>
                       {user.role === 'admin' ? 'Admin' : 'Teacher'}
                     </Badge>
                   </td>
-                  <td className={styles.date}>
+                  <td data-label="Datum" className={styles.date}>
                     {formatDate(user.createdAt, 'short')}
                   </td>
                   {isAdmin && (

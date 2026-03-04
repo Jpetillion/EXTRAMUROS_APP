@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -37,13 +37,19 @@ function FitBounds({ positions }) {
   return null;
 }
 
+const POLL_INTERVAL = 30000; // 30 seconds
+
 const CheckInMap = ({ tripId }) => {
   const [checkIns, setCheckIns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [lastRefresh, setLastRefresh] = useState(null);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
     fetchCheckIns();
+    intervalRef.current = setInterval(fetchCheckIns, POLL_INTERVAL);
+    return () => clearInterval(intervalRef.current);
   }, [tripId]);
 
   const fetchCheckIns = async () => {
@@ -72,6 +78,7 @@ const CheckInMap = ({ tripId }) => {
         console.log('📍 Username field:', data[0].student_username);
       }
       setCheckIns(data);
+      setLastRefresh(new Date());
     } catch (err) {
       console.error('Error fetching student locations:', err);
       setError(err.message);
@@ -160,7 +167,17 @@ const CheckInMap = ({ tripId }) => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h3>Current Student Locations ({checkIns.length})</h3>
+        <div>
+          <h3>
+            Current Student Locations ({checkIns.length})
+            <span className={styles.liveBadge}>● Live</span>
+          </h3>
+          {lastRefresh && (
+            <p className={styles.lastRefresh}>
+              Bijgewerkt: {lastRefresh.getHours().toString().padStart(2,'0')}:{lastRefresh.getMinutes().toString().padStart(2,'0')}:{lastRefresh.getSeconds().toString().padStart(2,'0')}
+            </p>
+          )}
+        </div>
         <button onClick={fetchCheckIns} className={styles.refreshButton}>
           🔄 Refresh
         </button>

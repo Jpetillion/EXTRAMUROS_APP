@@ -196,9 +196,9 @@ const Classes = () => {
             <tbody>
               {classes.map((cls) => (
                 <tr key={cls.id} className={styles.tableRow}>
-                  <td className={styles.className}>{cls.name}</td>
-                  <td>{cls.schoolYear || '-'}</td>
-                  <td className={styles.date}>
+                  <td data-label="Klas" className={styles.className}>{cls.name}</td>
+                  <td data-label="Schooljaar">{cls.schoolYear || '-'}</td>
+                  <td data-label="Datum" className={styles.date}>
                     {formatDate(cls.createdAt, 'short')}
                   </td>
                   <td className={styles.actions}>

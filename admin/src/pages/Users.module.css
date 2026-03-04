@@ -162,11 +162,64 @@
   }
 
   .tableContainer {
-    overflow-x: auto;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    overflow: visible;
   }
 
-  .table {
-    min-width: 600px;
+  .table thead {
+    display: none;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+
+  .table tbody tr {
+    background: white;
+    border: 1px solid var(--color-neutral-200, #E5E7EB);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .table td:last-child {
+    border-bottom: none;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--color-neutral-500, #9CA3AF);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    flex-shrink: 0;
+    margin-right: 0.5rem;
+  }
+
+  .actions {
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .actions::before {
+    display: none;
   }
 
   .formActions {

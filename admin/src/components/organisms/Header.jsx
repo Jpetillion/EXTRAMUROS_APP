@@ -3,7 +3,7 @@ import { Backpack } from '@phosphor-icons/react';
 import Button from '../atoms/Button';
 import styles from './Header.module.css';
 
-const Header = () => {
+const Header = ({ onMenuToggle }) => {
   const { user, logout } = useAuth();
 
   const handleLogout = async () => {
@@ -32,14 +32,19 @@ const Header = () => {
   return (
     <header className={styles.header}>
       <div className={styles.container}>
-        <div className={styles.logo}>
-          <div className={styles.logoIcon}>
-            <Backpack size={24} weight="regular" color="white" />
+        <div className={styles.logoSection}>
+          <button className={styles.hamburger} onClick={onMenuToggle} aria-label="Menu">
+            ☰
+          </button>
+          <div className={styles.logo}>
+            <div className={styles.logoIcon}>
+              <Backpack size={24} weight="regular" color="white" />
+            </div>
+            <h1>Extra Muros</h1>
+            <span className={styles.badge}>
+              {user?.role === 'teacher' ? 'Teacher' : 'Admin'}
+            </span>
           </div>
-          <h1>Extra Muros</h1>
-          <span className={styles.badge}>
-            {user?.role === 'teacher' ? 'Teacher' : 'Admin'}
-          </span>
         </div>
         <div className={styles.right}>
           <div className={styles.user}>

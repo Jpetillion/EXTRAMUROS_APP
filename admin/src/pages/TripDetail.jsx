@@ -80,11 +80,11 @@ const TripDetail = () => {
     try {
       setSubmittingEvent(true);
 
-      const url = editingEvent
+      const url = editingEvent?.id
         ? `/api/trips/${id}/events/${editingEvent.id}`
         : `/api/trips/${id}/events`;
 
-      const method = editingEvent ? 'PUT' : 'POST';
+      const method = editingEvent?.id ? 'PUT' : 'POST';
 
       const token = localStorage.getItem('token');
       const headers = {};
@@ -443,7 +443,7 @@ const TripDetail = () => {
           setEditingEvent(null);
           fetchTripData(); // Refresh trip data when modal closes
         }}
-        title={editingEvent ? 'Edit Event' : 'Create New Event'}
+        title={editingEvent?.id ? 'Edit Event' : 'Create New Event'}
         size="large"
       >
         <EventForm

@@ -742,7 +742,7 @@ const EventForm = ({ event, onSave, onCancel, isLoading }) => {
           Cancel
         </Button>
         <Button type="submit" variant="primary" loading={isLoading}>
-          {event ? 'Update Event' : 'Create Event'}
+          {event?.id ? 'Update Event' : 'Create Event'}
         </Button>
       </div>
     </form>

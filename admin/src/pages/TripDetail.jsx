@@ -430,6 +430,8 @@ const TripDetail = () => {
           setEditingEvent({ dayId });
           setIsEventModalOpen(true);
         }}
+        onEditEvent={handleEditEvent}
+        onDeleteEvent={handleDeleteEvent}
       />
 
       {/* Private Documents Section */}

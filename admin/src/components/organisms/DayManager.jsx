@@ -6,7 +6,7 @@ import DayCard from '../molecules/DayCard';
 import DayForm from './DayForm';
 import styles from './DayManager.module.css';
 
-const DayManager = ({ tripId, onUpdate, onAddEvent }) => {
+const DayManager = ({ tripId, onUpdate, onAddEvent, onEditEvent, onDeleteEvent }) => {
   const [days, setDays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -202,10 +202,27 @@ const DayManager = ({ tripId, onUpdate, onAddEvent }) => {
               {day.events && day.events.length > 0 && (
                 <div className={styles.eventsList}>
                   {day.events.map((event) => (
-                    <div key={event.id} className={styles.eventItem}>
-                      <span className={styles.eventTitle}>{event.title}</span>
-                      {event.category && (
-                        <span className={styles.eventCategory}>{event.category}</span>
+                    <div
+                      key={event.id}
+                      className={styles.eventItem}
+                      onClick={() => onEditEvent?.(event)}
+                      style={{ cursor: onEditEvent ? 'pointer' : 'default' }}
+                    >
+                      <div className={styles.eventInfo}>
+                        <span className={styles.eventTitle}>{event.title}</span>
+                        {event.category && (
+                          <span className={styles.eventCategory}>{event.category}</span>
+                        )}
+                      </div>
+                      {onDeleteEvent && (
+                        <button
+                          type="button"
+                          className={styles.eventDeleteButton}
+                          onClick={(e) => { e.stopPropagation(); onDeleteEvent(event.id); }}
+                          title="Delete event"
+                        >
+                          ✕
+                        </button>
                       )}
                     </div>
                   ))}

@@ -126,6 +126,7 @@ router.put('/trips/:tripId/days/:dayId', authMiddleware, requireRole('teacher', 
     if (req.body.description !== undefined) updates.description = req.body.description;
     if (req.body.dayNumber !== undefined) updates.day_number = parseInt(req.body.dayNumber);
     if (req.body.orderIndex !== undefined) updates.order_index = parseInt(req.body.orderIndex);
+    if (req.body.color !== undefined) updates.color = req.body.color;
 
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({ error: 'No valid fields to update' });

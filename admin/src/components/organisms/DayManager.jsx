@@ -72,6 +72,15 @@ const DayManager = ({ tripId, onUpdate, onAddEvent, onEditEvent, onDeleteEvent }
     }
   };
 
+  const handleColorChange = async (dayId, color) => {
+    try {
+      await daysAPI.update(tripId, dayId, { color });
+      setDays((prev) => prev.map((d) => d.id === dayId ? { ...d, color } : d));
+    } catch (err) {
+      console.error('Failed to save day color:', err);
+    }
+  };
+
   const handleDelete = async (dayId) => {
     try {
       setError(null);
@@ -196,6 +205,7 @@ const DayManager = ({ tripId, onUpdate, onAddEvent, onEditEvent, onDeleteEvent }
               onMoveUp={handleMoveUp}
               onMoveDown={handleMoveDown}
               onAddEvent={onAddEvent}
+              onColorChange={handleColorChange}
               isFirst={index === 0}
               isLast={index === days.length - 1}
             >

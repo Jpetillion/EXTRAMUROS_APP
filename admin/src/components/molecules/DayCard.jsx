@@ -15,12 +15,10 @@ const COLOR_OPTIONS = [
   '#6b7280', // gray
 ];
 
-const DayCard = ({ day, onEdit, onDelete, onMoveUp, onMoveDown, isFirst, isLast, onAddEvent, children }) => {
+const DayCard = ({ day, onEdit, onDelete, onMoveUp, onMoveDown, isFirst, isLast, onAddEvent, onColorChange, children }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [dotColor, setDotColor] = useState(
-    () => localStorage.getItem(`day-color-${day.id}`) || '#3b82f6'
-  );
+  const [dotColor, setDotColor] = useState(day.color || '#3b82f6');
   const [colorMenu, setColorMenu] = useState(null);
   const menuRef = useRef(null);
   const longPressTimer = useRef(null);
@@ -73,8 +71,8 @@ const DayCard = ({ day, onEdit, onDelete, onMoveUp, onMoveDown, isFirst, isLast,
 
   const handleSelectColor = (color) => {
     setDotColor(color);
-    localStorage.setItem(`day-color-${day.id}`, color);
     setColorMenu(null);
+    onColorChange?.(day.id, color);
   };
 
   const handleDelete = async () => {
